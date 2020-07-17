@@ -120,7 +120,6 @@ bool is_variable(std::vector<std::string> const& symbol) {
 }
 
 void parse(std::vector<std::string> const& symbol) {
-    // todo cdr:
     if(is_lparen(symbol)) {
         std::cout << "lparen" << std::endl;
     } else if(is_rparen(symbol)) {
