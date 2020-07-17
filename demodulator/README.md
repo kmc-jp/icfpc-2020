@@ -1,5 +1,5 @@
 # 使い方
-`$ python3 demod.py [input]`
+`$ python3 demod.py modulated_number`
 
 # 注意
 日本語コメント書いちゃったのでpython2だとエラーが出ます
