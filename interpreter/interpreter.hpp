@@ -1,3 +1,6 @@
+#ifndef INTERPRETER_HPP
+#define INTERPRETER_HPP
+
 #include <future>
 #include <memory>
 #include <vector>
@@ -23,3 +26,5 @@ void dump(const ApplyPtr& ap);
 
 //bool is_finished(const ApplyPtr& ap);
 ApplyPtr apply(const ApplyPtr& ap);
+
+#endif

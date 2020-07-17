@@ -6,6 +6,10 @@
 
 using ll = long long;
 
+void skip_spaces(std::string const& in, int& pos) {
+    while(pos < (int)in.size() && in[pos] == ' ') ++pos;
+}
+
 void skip_spaces(std::vector<std::string> const& in, int& x) {
     while(x < (int)in[0].size()) {
         bool all_space = true;
@@ -57,8 +61,8 @@ Token dict_operator(const ll id) {
     if(id == 10) return {TokenType::Negate, 0};
     if(id == 12) return {TokenType::Equality, 0};
     if(id == 14) return nil;
-    if(id == 15) return "isnil";
-    if(id == 40) return {TokenType::Division, 0};
+    if(id == 15) return  {TokenType::IsNil, 0};
+    if(id == 40) return  {TokenType::Division, 0};
     if(id == 146) return {TokenType::Product, 0};
     if(id == 170) return {TokenType::Modulate, 0};
     if(id == 174) return {TokenType::Send, 0};
@@ -153,11 +157,11 @@ bool is_variable(std::vector<std::string> const& symbol) {
 
 Token tokenize_one(std::vector<std::string> const& symbol) {
     if(is_lparen(symbol)) {
-        std::cout << "lparen" << std::endl;
+        throw std::runtime_error("tokenize_one: not implemented lparen");
     } else if(is_rparen(symbol)) {
-        std::cout << "rparen" << std::endl;
+        throw std::runtime_error("tokenize_one: not implemented rparen");
     } else if(is_list_sep(symbol)) {
-        std::cout << "list_sep" << std::endl;
+        throw std::runtime_error("tokenize_one: not implemented list_sep");
     } else if(is_variable(symbol)) {
         const ll id = calc_var_number_part(symbol);
         std::cout << ("x" + std::to_string(id)) << std::endl;
@@ -165,9 +169,9 @@ Token tokenize_one(std::vector<std::string> const& symbol) {
     } else if(symbol[0][0] == '0') { // number
         const ll num = calc_number_part(symbol);
         if(symbol.size() == symbol[0].size()) { // positive
-            std::cout << num << std::endl;
+            return number(num);
         } else {
-            std::cout << -num << std::endl;
+            return number(-num);
         }
     } else if(symbol[0][0] == '1') { // operator
         return dict_operator(calc_number_part(symbol));
@@ -181,6 +185,64 @@ std::vector<Token> tokenize(std::vector<std::string> const& input) {
         res.push_back(tokenize_one(std::move(v)));
     }
     return res;
+}
+
+bool is_number(std::string const& s) {
+    bool res = true;
+    for(int i = s[0] == '-'; i < (int)s.size(); ++i) {
+        res &= isdigit(s[i]);
+    }
+    return res;
+}
+
+// require: all tokens are separated by spaces
+std::vector<Token> tokenize(std::string const& input) {
+    std::vector<Token> res;
+    std::string cur;
+    int pos = 0;
+    while(true) {
+        skip_spaces(input, pos);
+        if(pos >= (int)input.size()) return res;
+
+        while(pos < (int)input.size() && input[pos] != ' ') cur += input[pos++];
+
+        if(cur == "ap")            res.push_back(app);
+        else if(is_number(cur))    res.push_back(number(std::stoll(cur)));
+        else if(cur == "inc")      res.push_back({TokenType::Succ, 0});
+        else if(cur == "dec")      res.push_back({TokenType::Pred, 0});
+        else if(cur == "add")      res.push_back(sum);
+        else if(cur == "=")        res.push_back({TokenType::Equality, 0});
+        else if(cur[0] == 'x')     res.push_back({TokenType::Variable, std::stoll(cur.substr(1))});
+        else if(cur == "mul")      res.push_back({TokenType::Product, 0});
+        else if(cur == "div")      res.push_back({TokenType::Division, 0});
+        else if(cur == "eq")       res.push_back({TokenType::Eq, 0});
+        else if(cur == "lt")       res.push_back({TokenType::Lt, 0});
+        else if(cur == "mod")      res.push_back({TokenType::Modulate, 0});
+        else if(cur == "dem")      res.push_back({TokenType::Demod, 0});
+        else if(cur == "send")     res.push_back({TokenType::Send, 0});
+        else if(cur == "neg")      res.push_back({TokenType::Negate, 0});
+        else if(cur == "s")        res.push_back({TokenType::S, 0});
+        else if(cur == "c")        res.push_back({TokenType::C, 0});
+        else if(cur == "b")        res.push_back({TokenType::B, 0});
+        else if(cur == "t")        res.push_back({TokenType::True, 0});
+        else if(cur == "f")        res.push_back({TokenType::False, 0});
+        else if(cur == "i")        res.push_back({TokenType::I, 0});
+        else if(cur == "pwr2")     res.push_back({TokenType::Pwr2, 0}); // ???
+        else if(cur == "cons")     res.push_back(cons);
+        else if(cur == "car")      res.push_back({TokenType::Car, 0});
+        else if(cur == "cdr")      res.push_back({TokenType::Cdr, 0});
+        else if(cur == "nil")      res.push_back(nil);
+        else if(cur == "isnil")    res.push_back({TokenType::IsNil, 0});
+        else if(cur == "(")        throw std::runtime_error("not implemented");
+        else if(cur == ",")        throw std::runtime_error("not implemented");
+        else if(cur == ")")        throw std::runtime_error("not implemented");
+        else if(cur == "vec")      res.push_back(cons);
+        else if(cur == "draw")     throw std::runtime_error("not implemented draw");
+        else if(cur == "interact") throw std::runtime_error("not implemented: interact");
+        else                       throw std::runtime_error("error lexing: " + cur);
+
+        cur.clear();
+    }
 }
 
 #endif
