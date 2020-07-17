@@ -1,3 +1,6 @@
+#ifndef TOKEN_HPP
+#define TOKEN_HPP
+
 #include <string>
 
 enum class TokenType {
@@ -49,3 +52,5 @@ constexpr Token pwr2 = {TokenType::Pwr2, 0};
 constexpr Token cons = {TokenType::Cons, 0};
 constexpr Token nil = {TokenType::Nil, 0};
 constexpr Token number(int64_t x) { return {TokenType::Number, x}; }
+
+#endif
