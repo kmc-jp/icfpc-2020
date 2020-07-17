@@ -6,7 +6,6 @@ def modulate(num, i):
         return None, 2
     elif num[i : i + 2] == "11":
         val1, l1 = modulate(num, i + 2)
-        print(l1)
         val2, l2 = modulate(num, i + 2 + l1)
         return [val1, val2], l1 + l2 + 2
     result = 0
