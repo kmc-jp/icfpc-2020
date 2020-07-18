@@ -29,6 +29,9 @@ int main(){
         interp.run(ss, ":" + std::to_string(var_id));
         std::getline(ss, ls);
         var_id++;
+        interp.run(std::cout,
+                   ":" + std::to_string(var_id) + " = ap car ap cdr :" + std::to_string(var_id - 1));
+        var_id++;
         std::cout << ls << std::endl;
         int count = 0;
         int depth = 0;
@@ -67,6 +70,7 @@ int main(){
             maxy = std::max(maxy, y);
         }
         vector <string> field(maxy - miny + 1, string(maxx - minx + 1, '.'));
+
         for(int i = 0; i < ps.size(); i++){
             for(auto &p : ps[i]){
                 field[p.second - miny][p.first - minx] = '0' + i;
