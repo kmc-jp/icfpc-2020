@@ -3,6 +3,7 @@
 
 #include <future>
 #include <memory>
+#include <ostream>
 #include <vector>
 #include <unordered_map>
 #include "token.hpp"
@@ -48,7 +49,7 @@ using Environment = std::unordered_map<uint64_t, ApplyPtr>;
 
 //FuncApplyPtr make_apply(const Token& ins, const std::vector<FuncApplyPtr>& operands);
 ApplyPtr parse(const std::vector<Token>& tokens);
-void dump(const ApplyPtr& ap, bool enable_eval, const std::shared_ptr<Environment>& env);
+void dump(std::ostream& os, const ApplyPtr& ap, bool enable_eval, const std::shared_ptr<Environment>& env);
 int64_t get_int(const ApplyPtr& ap);
 
 //bool is_finished(const ApplyPtr& ap);
