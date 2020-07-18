@@ -1,8 +1,6 @@
 #include "demodulator.hpp"
-#include <vector>
-#include <iostream>
+
 std::pair<std::vector<Token>, int> demodulate(const std::string &num, int i) {
-  std::cerr << "i: " << i << std::endl;
   if (num.substr(i, 2) == "00") {
     return {{nil}, 2};
   }
@@ -14,7 +12,7 @@ std::pair<std::vector<Token>, int> demodulate(const std::string &num, int i) {
     tokens.insert(tokens.end(), result2.first.begin(), result2.first.end());
     return {tokens, result1.second + result2.second + 2};
   }
-  int result = 0;
+  int64_t result = 0;
   if (num.substr(i, 2) == "01") {
     result = 1;
   } else {
@@ -22,18 +20,21 @@ std::pair<std::vector<Token>, int> demodulate(const std::string &num, int i) {
   }
   int n = 0;
   for (int pos = i + 2; pos < (int)num.size(); pos++) {
-    if (num[pos] == '0') n++;
+    if (num[pos] == '0') {
+      n = pos - i - 2;
+      break;
+    }
   }
-  int val = 0;
+  int64_t val = 0;
   for (int j = 0; j < 4 * n; j++) {
     val *= 2;
     if (num[i + 2 + n + 1 + j] == '1') {
       val += 1;
     }
-    result *= val;
-    Token token = {TokenType::Number, result};
-    return {{token}, 2 + 4 * n + n + 1};
   }
+  result *= val;
+  Token token = {TokenType::Number, result};
+  return {{token}, 2 + 4 * n + n + 1};
 }
 
 std::vector<Token> demodulate(const std::string &s) {
@@ -41,7 +42,7 @@ std::vector<Token> demodulate(const std::string &s) {
   return result.first;
 }
 
-
+/*
 int main() {
   std::string s;
   while (std::cin >> s) {
@@ -87,3 +88,4 @@ int main() {
     }
   }
 }
+*/
