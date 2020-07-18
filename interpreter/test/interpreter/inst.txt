@@ -13,7 +13,7 @@ ap ap ap b inc dec 5 = 5
 ap ap t 1 5 = 1
 ap ap t ap inc 5 t = 6
 ap ap f 1 5 = 5
-ap pwr2 = 1024
+ap pwr2 10 = 1024
 ap car ap ap cons 8 ap ap cons 7 nil
 ap car ap cdr ap ap cons 8 ap ap cons 7 nil
 ap cdr ap cdr ap ap cons 8 ap ap cons 7 1
