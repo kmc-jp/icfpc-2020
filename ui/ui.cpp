@@ -71,7 +71,7 @@ int main(){
         }
         vector <string> field(maxy - miny + 1, string(maxx - minx + 1, '.'));
 
-        for(int i = 0; i < ps.size(); i++){
+        for(int i = ps.size() - 1; i >= 0; i--){
             for(auto &p : ps[i]){
                 field[p.second - miny][p.first - minx] = '0' + i;
             }
