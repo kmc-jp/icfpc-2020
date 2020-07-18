@@ -110,6 +110,15 @@ ApplyPtr eval(const ApplyPtr& ap, std::shared_ptr<Environment> const& env) {
             return make_apply(number(lval * rval));
           });
         }
+    case TokenType::Division:
+        {
+          auto lhs = ap->rhs;
+          return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
+            const auto lval = eval(lhs, env)->ins.immediate;
+            const auto rval = eval(rhs, env)->ins.immediate;
+            return make_apply(number(lval / rval));
+          });
+        }
       case TokenType::Eq:
         {
           auto lhs = ap->rhs;
