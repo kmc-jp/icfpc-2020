@@ -1,3 +1,6 @@
+#include <iostream>
+#include <string>
+#include <algorithm>
 #include "modulator.hpp"
 
 using namespace std;

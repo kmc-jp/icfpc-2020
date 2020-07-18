@@ -1,6 +1,7 @@
 #include <iostream>
-#include "lexer.hpp"
-#include "interpreter.hpp"
+#include <string>
+#include <algorithm>
+#include <iostream>
 
 using namespace std;
 
