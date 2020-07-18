@@ -163,7 +163,7 @@ ApplyPtr apply(const ApplyPtr& ap) {
           auto num = apply(ap->rhs)->ins.immediate;
           return make_apply(number(INT64_C(1) << num));
         }
-    case TokenType::I:
+      case TokenType::I:
         {
           return apply(ap->rhs);
         }
