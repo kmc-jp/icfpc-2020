@@ -176,6 +176,16 @@ ApplyPtr eval(const ApplyPtr& ap, std::shared_ptr<Environment> const& env) {
             });
           });
         }
+      case TokenType::Car:
+          return eval(make_apply(ap->rhs, make_apply({TokenType::True, 1})), env);
+      case TokenType::Cdr:
+          return eval(make_apply(ap->rhs, make_apply({TokenType::False, 0})), env);
+      case TokenType::IsNil: // ???
+        {
+          const auto l = eval(ap->rhs, env);
+          if(l->ins.type == TokenType::Nil) return make_apply({TokenType::True, 1});
+          else                              return make_apply({TokenType::False, 0});
+        }
       case TokenType::Nil:
         return make_apply({TokenType::True, 0});
       case TokenType::Partial:
