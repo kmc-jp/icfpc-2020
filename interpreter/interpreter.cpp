@@ -219,9 +219,9 @@ ApplyPtr eval(const ApplyPtr& ap, std::shared_ptr<Environment> const& env) {
         return op->func(ap->rhs);
       case TokenType::Variable:
           if(env->count(ap->lhs->ins.immediate)) {
-            return eval(env->at(ap->lhs->ins.immediate), env);
+            return make_apply(eval(env->at(ap->lhs->ins.immediate), env), ap->rhs);
           } else {
-            return ap; // can do nothing (stuck)
+            throw std::runtime_error("BAD apply: apply variable"); // can do nothing (stuck)
           }
       default:
         throw std::runtime_error("BAD apply: ins type is " + std::to_string(static_cast<int>(op->ins.type)));

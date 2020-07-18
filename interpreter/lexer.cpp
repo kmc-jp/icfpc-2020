@@ -184,7 +184,7 @@ std::vector<Token> tokenize(std::vector<std::string> const& input) {
 bool is_number(std::string const& s) {
     bool res = true;
     for(int i = s[0] == '-'; i < (int)s.size(); ++i) {
-        res &= isdigit(s[i]);
+        res &= (bool)isdigit(s[i]);
     }
     return res;
 }
