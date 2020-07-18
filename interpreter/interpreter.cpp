@@ -119,6 +119,11 @@ ApplyPtr eval(const ApplyPtr& ap, std::shared_ptr<Environment> const& env) {
             return make_apply({lval == rval ? TokenType::True : TokenType::False, lval == rval ? 1 : 0});
           });
         }
+      case TokenType::Negate:
+        {
+          const auto val = eval(ap->rhs, env)->ins.immediate;
+          return make_apply(number(-val));
+        }
       case TokenType::S:
         {
           auto lhs = ap->rhs;
