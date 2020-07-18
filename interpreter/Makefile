@@ -1,7 +1,7 @@
 SRCS:=$(wildcard *.cpp)
 OBJS:=$(SRCS:%.cpp=%.o)
 DEPS:=$(SRCS:%.cpp=%.d)
-CXXFLAGS:=-std=c++17 -O2 -Wall -Wextra
+CXXFLAGS:=-std=c++17 -Og -g -Wall -Wextra
 
 all: interpret
 

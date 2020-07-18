@@ -5,22 +5,28 @@
 
 auto id = [] (const ApplyPtr& ap) { return ap; };
 
-Apply::Apply(const Token& ins) : ins(ins), func(id), lhs(), rhs() {}
-Apply::Apply(std::function<ApplyPtr(const ApplyPtr&)> func)
-  : ins({TokenType::Partial, 0}), func(func), lhs(), rhs() {}
-Apply::Apply(const ApplyPtr& lhs, const ApplyPtr& rhs)
-    : ins(app), func(id), lhs(lhs), rhs(rhs) {}
+Object::Object(const Token& ins) : ins(ins) {}
+Partial::Partial(std::function<ApplyPtr(const ApplyPtr&)> func, const std::string& func_name)
+  : func(func), func_name(func_name) {}
+ApplyPair::ApplyPair(const ApplyPtr& lhs, const ApplyPtr& rhs)
+    : lhs(lhs), rhs(rhs) {}
+ConsPair::ConsPair(const ApplyPtr& car, const ApplyPtr& cdr)
+    : car(car), cdr(cdr) {}
 
 ApplyPtr make_apply(const Token& ins) {
-  return std::make_shared<Apply>(ins);
+  return std::make_shared<Object>(ins);
 }
 
-ApplyPtr make_apply(const std::function<ApplyPtr(const ApplyPtr&)>& func) {
-  return std::make_shared<Apply>(func);
+ApplyPtr make_apply(const std::function<ApplyPtr(const ApplyPtr&)>& func, const std::string& func_name) {
+  return std::make_shared<Partial>(func, func_name);
 }
 
 ApplyPtr make_apply(const ApplyPtr& lhs, const ApplyPtr& rhs) {
-  return std::make_shared<Apply>(lhs, rhs);
+  return std::make_shared<ApplyPair>(lhs, rhs);
+}
+
+ApplyPtr make_cons_pair(const ApplyPtr& car, const ApplyPtr& cdr) {
+  return std::make_shared<ConsPair>(car, cdr);
 }
 
 template <typename I>
@@ -44,18 +50,24 @@ ApplyPtr parse(const std::vector<Token>& tokens) {
 
 void dump(const ApplyPtr& ap, int level) {
   if (ap->is_apply()) {
+    auto ap_ap = std::dynamic_pointer_cast<ApplyPair>(ap);
     std::cerr << std::string(level, '.') << "(" << std::endl;
-    dump(ap->lhs, level+1);
+    dump(ap_ap->lhs, level+1);
     std::cerr << std::endl;
-    dump(ap->rhs, level+1);
+    dump(ap_ap->rhs, level+1);
     std::cerr << std::endl;
     std::cerr << std::string(level, '.') << ")";
   } else if (ap->is_partial()) {
-    std::cerr << std::string(level, '.') << "P";
-  } else {
+    auto ap_pf = std::dynamic_pointer_cast<Partial>(ap);
+    std::cerr << std::string(level, '.') << "P[" << ap_pf->func_name << "]";
+  } else if (ap->is_object()) {
+    auto ap_obj = std::dynamic_pointer_cast<Object>(ap);
     std::cerr << std::string(level, '.');
-    auto type = ap->ins.type;
+    auto type = ap_obj->ins.type;
     switch (type) {
+      case TokenType::Equality: std::cerr << "="; break;
+      case TokenType::Succ: std::cerr << "Inc"; break;
+      case TokenType::Pred: std::cerr << "Dec"; break;
       case TokenType::Sum: std::cerr << "+"; break;
       case TokenType::Product: std::cerr << "*"; break;
       case TokenType::Division: std::cerr << "/"; break;
@@ -65,15 +77,28 @@ void dump(const ApplyPtr& ap, int level) {
       case TokenType::B: std::cerr << "B"; break;
       case TokenType::C: std::cerr << "C"; break;
       case TokenType::Pwr2: std::cerr << "Pwr2"; break;
-      case TokenType::I:    std::cerr << "I"; break;
+      case TokenType::I: std::cerr << "I"; break;
+      case TokenType::True: std::cerr << "True"; break;
+      case TokenType::False: std::cerr << "False"; break;
       case TokenType::Nil: std::cerr << "Nil"; break;
+      case TokenType::IsNil: std::cerr << "IsNil"; break;
       case TokenType::Cons: std::cerr << "Cons"; break;
       case TokenType::Car: std::cerr << "Car"; break;
       case TokenType::Cdr: std::cerr << "Cdr"; break;
-      case TokenType::Number: std::cerr << "N[" << ap->ins.immediate << "]"; break;
-      case TokenType::Variable: std::cerr << "Var[" << ap->ins.immediate << "]"; break;
-      default: std::cerr << static_cast<int>(ap->ins.type);
+      case TokenType::Number: std::cerr << "N[" << ap_obj->ins.immediate << "]"; break;
+      case TokenType::Variable: std::cerr << "Var[" << ap_obj->ins.immediate << "]"; break;
+      default: std::cerr << static_cast<int>(ap_obj->ins.type);
     }
+  } else if (ap->is_cons_pair()) {
+    auto ap_cons = std::dynamic_pointer_cast<ConsPair>(ap);
+    std::cerr << std::string(level, '.') << "'(" << std::endl;
+    dump(ap_cons->car, level+1);
+    std::cerr << std::endl;
+    dump(ap_cons->cdr, level+1);
+    std::cerr << std::endl;
+    std::cerr << std::string(level, '.') << ")";
+  } else {
+    throw std::runtime_error("Unknown element");
   }
 }
 
@@ -82,149 +107,194 @@ void dump(const ApplyPtr& ap) {
   std::cerr << std::endl;
 }
 
+int64_t get_int(const ApplyPtr& ap) {
+  if (ap->is_object()) {
+    auto ap_obj = std::dynamic_pointer_cast<Object>(ap);
+    if (ap_obj->ins.type != TokenType::Number) {
+      dump(ap);
+      throw std::runtime_error("Failed to get_int: not a Number");
+    }
+    return ap_obj->ins.immediate;
+  } else {
+    dump(ap);
+    throw std::runtime_error("Failed to get_int: not an Object");
+  }
+}
+
 ApplyPtr eval(const ApplyPtr& ap, std::shared_ptr<Environment> const& env) {
   if (ap->is_apply()) {
-    auto op = eval(ap->lhs, env);
-    switch (op->ins.type) {
-      case TokenType::Succ:
-        {
-          auto num = eval(ap->rhs, env)->ins.immediate;
-          return make_apply(number(num + 1));
-        }
-      case TokenType::Pred:
-        {
-          auto num = eval(ap->rhs, env)->ins.immediate;
-          return make_apply(number(num - 1));
-        }
-      case TokenType::Sum:
-        {
-          auto lhs = ap->rhs;
-          return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
-            auto lval = eval(lhs, env)->ins.immediate;
-            auto rval = eval(rhs, env)->ins.immediate;
-            return make_apply(number(lval + rval));
-          });
-        }
-      case TokenType::Product:
-        {
-          auto lhs = ap->rhs;
-          return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
-            auto lval = eval(lhs, env)->ins.immediate;
-            auto rval = eval(rhs, env)->ins.immediate;
-            return make_apply(number(lval * rval));
-          });
-        }
-      case TokenType::Division:
-        {
-          auto lhs = ap->rhs;
-          return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
-            const auto lval = eval(lhs, env)->ins.immediate;
-            const auto rval = eval(rhs, env)->ins.immediate;
-            return make_apply(number(lval / rval));
-          });
-        }
-      case TokenType::Eq:
-        {
-          auto lhs = ap->rhs;
-          return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
-            auto lval = eval(lhs, env)->ins.immediate;
-            auto rval = eval(rhs, env)->ins.immediate;
-            return make_apply({lval == rval ? TokenType::True : TokenType::False, lval == rval ? 1 : 0});
-          });
-        }
-      case TokenType::Lt:
-        {
-          const auto lhs = ap->rhs;
-          return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
-            const auto lval = eval(lhs, env)->ins.immediate;
-            const auto rval = eval(rhs, env)->ins.immediate;
-            return make_apply({lval < rval ? TokenType::True : TokenType::False, lval < rval});
-          });
-        }
-      case TokenType::Negate:
-        {
-          const auto val = eval(ap->rhs, env)->ins.immediate;
-          return make_apply(number(-val));
-        }
-      case TokenType::S:
-        {
-          auto lhs = ap->rhs;
-          return make_apply([=] (const ApplyPtr& mhs) -> ApplyPtr {
+    auto ap_ap = std::dynamic_pointer_cast<ApplyPair>(ap);
+    auto first = eval(ap_ap->lhs, env);
+    if (first->is_object()) {
+      auto op = std::dynamic_pointer_cast<Object>(first);
+      switch (op->ins.type) {
+        case TokenType::Succ:
+          {
+            auto num = eval(ap_ap->rhs, env);
+            return make_apply(number(get_int(num) + 1));
+          }
+        case TokenType::Pred:
+          {
+            auto num = eval(ap_ap->rhs, env);
+            return make_apply(number(get_int(num) - 1));
+          }
+        case TokenType::Sum:
+          {
+            auto lhs = ap_ap->rhs;
             return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
-              return eval(make_apply(make_apply(lhs, rhs), make_apply(mhs, rhs)), env);
-            });
-          });
-        }
-      case TokenType::C:
-        {
-          auto lhs = ap->rhs;
-          return make_apply([=] (const ApplyPtr& mhs) -> ApplyPtr {
+              auto lval = eval(lhs, env);
+              auto rval = eval(rhs, env);
+              return make_apply(number(get_int(lval) + get_int(rval)));
+            }, "Sum1");
+          }
+        case TokenType::Product:
+          {
+            auto lhs = ap_ap->rhs;
             return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
-              return eval(make_apply(make_apply(lhs, rhs), mhs), env);
-            });
-          });
-        }
-      case TokenType::B:
-        {
-          auto lhs = ap->rhs;
-          return make_apply([=] (const ApplyPtr& mhs) -> ApplyPtr {
+              auto lval = eval(lhs, env);
+              auto rval = eval(rhs, env);
+              return make_apply(number(get_int(lval) * get_int(rval)));
+            }, "Product1");
+          }
+        case TokenType::Division:
+          {
+            auto lhs = ap_ap->rhs;
             return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
-              return eval(make_apply(lhs, eval(make_apply(mhs, rhs), env)), env);
-            });
-          });
-        }
-      case TokenType::True:
-        {
-          auto lhs = ap->rhs;
-          return make_apply([=] ([[maybe_unused]] const ApplyPtr& rhs) -> ApplyPtr {
-            return eval(lhs, env);
-          });
-        }
-      case TokenType::False:
-        {
-          return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
-            return eval(rhs, env);
-          });
-        }
-      case TokenType::Pwr2:
-        {
-          auto num = eval(ap->rhs, env)->ins.immediate;
-          return make_apply(number(INT64_C(1) << num));
-        }
-      case TokenType::I:
-        return eval(ap->rhs, env);
-      case TokenType::Cons:
-        {
-          auto lhs = ap->rhs;
-          return make_apply([=] (const ApplyPtr& mhs) -> ApplyPtr {
+              const auto lval = eval(lhs, env);
+              const auto rval = eval(rhs, env);
+              return make_apply(number(get_int(lval) / get_int(rval)));
+            }, "Division1");
+          }
+        case TokenType::Eq:
+          {
+            auto lhs = ap_ap->rhs;
             return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
-              return eval(make_apply(make_apply(rhs, lhs), mhs), env);
-            });
-          });
-        }
-      case TokenType::Car:
-          return eval(make_apply(ap->rhs, make_apply({TokenType::True, 1})), env);
-      case TokenType::Cdr:
-          return eval(make_apply(ap->rhs, make_apply({TokenType::False, 0})), env);
-      case TokenType::IsNil: // ???
-        {
-          const auto l = eval(ap->rhs, env);
-          if(l->ins.type == TokenType::Nil) return make_apply({TokenType::True, 1});
-          else                              return make_apply({TokenType::False, 0});
-        }
-      case TokenType::Nil:
-        return make_apply({TokenType::True, 1});
-      case TokenType::Partial:
-        return op->func(ap->rhs);
-      default:
-        throw std::runtime_error("BAD apply: ins type is " + std::to_string(static_cast<int>(op->ins.type)));
+              auto lval = eval(lhs, env);
+              auto rval = eval(rhs, env);
+              bool eq = false;
+              if (lval->is_object() && rval->is_object()) {
+                auto lobj = std::dynamic_pointer_cast<Object>(lval);
+                auto robj = std::dynamic_pointer_cast<Object>(rval);
+                if (lobj->ins.type == TokenType::Number && robj->ins.type == TokenType::Number) {
+                  eq = lobj->ins.immediate == robj->ins.immediate;
+                } else {
+                  throw std::runtime_error("Unimplemented compare");
+                }
+              } else {
+                throw std::runtime_error("Unimplemented compare");
+              }
+              return make_apply({eq ? TokenType::True : TokenType::False, 0});
+            }, "Eq1");
+          }
+        case TokenType::Lt:
+          {
+            const auto lhs = ap_ap->rhs;
+            return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
+              const auto lval = eval(lhs, env);
+              const auto rval = eval(rhs, env);
+              return make_apply({get_int(lval) < get_int(rval) ? TokenType::True : TokenType::False, 0});
+            }, "Lt1");
+          }
+        case TokenType::Negate:
+          {
+            const auto val = eval(ap_ap->rhs, env);
+            return make_apply(number(-get_int(val)));
+          }
+        case TokenType::S:
+          {
+            auto lhs = ap_ap->rhs;
+            return make_apply([=] (const ApplyPtr& mhs) -> ApplyPtr {
+              return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
+                return eval(make_apply(make_apply(lhs, rhs), make_apply(mhs, rhs)), env);
+              }, "S2");
+            }, "S1");
+          }
+        case TokenType::C:
+          {
+            auto lhs = ap_ap->rhs;
+            return make_apply([=] (const ApplyPtr& mhs) -> ApplyPtr {
+              return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
+                return eval(make_apply(make_apply(lhs, rhs), mhs), env);
+              }, "C2");
+            }, "C1");
+          }
+        case TokenType::B:
+          {
+            auto lhs = ap_ap->rhs;
+            return make_apply([=] (const ApplyPtr& mhs) -> ApplyPtr {
+              return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
+                return eval(make_apply(lhs, eval(make_apply(mhs, rhs), env)), env);
+              }, "B2");
+            }, "B1");
+          }
+        case TokenType::True:
+          {
+            auto lhs = ap_ap->rhs;
+            return make_apply([=] ([[maybe_unused]] const ApplyPtr& rhs) -> ApplyPtr {
+              return eval(lhs, env);
+            }, "True1");
+          }
+        case TokenType::False:
+          {
+            return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
+              return eval(rhs, env);
+            }, "False1");
+          }
+        case TokenType::Pwr2:
+          {
+            auto num = eval(ap_ap->rhs, env);
+            return make_apply(number(INT64_C(1) << get_int(num)));
+          }
+        case TokenType::I:
+          return eval(ap_ap->rhs, env);
+        case TokenType::Cons:
+          {
+            auto lhs = ap_ap->rhs;
+            return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
+              return make_cons_pair(lhs, rhs);
+            }, "Cons1");
+          }
+        case TokenType::Car:
+          {
+            auto cons_pair = std::dynamic_pointer_cast<ConsPair>(eval(ap_ap->rhs, env));
+            return eval(cons_pair->car, env);
+          }
+        case TokenType::Cdr:
+          {
+            auto cons_pair = std::dynamic_pointer_cast<ConsPair>(eval(ap_ap->rhs, env));
+            return eval(cons_pair->cdr, env);
+          }
+        case TokenType::IsNil: // ???
+          {
+            const auto l = eval(ap_ap->rhs, env);
+            if(l->is_object()) {
+              if(std::dynamic_pointer_cast<Object>(l)->ins.type == TokenType::Nil) return make_apply({TokenType::True, 1});
+              else                              return make_apply({TokenType::False, 0});
+            } else                              return make_apply({TokenType::False, 0});
+          }
+        case TokenType::Nil:
+          return make_apply({TokenType::True, 1});
+        default:
+          throw std::runtime_error("BAD apply: ins type is " + std::to_string(static_cast<int>(op->ins.type)));
+      }
+    } else if (first->is_partial()) {
+      return eval(std::dynamic_pointer_cast<Partial>(first)->func(ap_ap->rhs), env);
+    } else if (first->is_cons_pair()) {
+      auto ap_cons = std::dynamic_pointer_cast<ConsPair>(first);
+      auto expr = make_apply(make_apply(ap_ap->rhs, ap_cons->car), ap_cons->cdr);
+      return eval(expr, env);
+    } else {
+      throw std::runtime_error("BAD apply: illegal element");
     }
-  } else {
-    if(ap->ins.type == TokenType::Variable && env->count(ap->ins.immediate)) {
-      return (*env)[ap->ins.immediate] = eval(env->at(ap->ins.immediate), env);
+  } else if (ap->is_object()) {
+    auto ap_obj = std::dynamic_pointer_cast<Object>(ap);
+    if(ap_obj->ins.type == TokenType::Variable && env->count(ap_obj->ins.immediate)) {
+      return (*env)[ap_obj->ins.immediate] = eval(env->at(ap_obj->ins.immediate), env);
     } else {
       return ap;
     }
+  } else {
+    return ap;
   }
 }
 
@@ -246,6 +316,6 @@ void Interpreter::run(const std::vector<Token>& tokens) {
         auto tree = parse(tokens);
         dump(tree);
         tree = eval(tree, env);
-        std::cout << tree->ins.immediate << std::endl;
+        dump(tree);
     }
 }
