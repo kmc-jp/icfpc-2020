@@ -2,9 +2,16 @@
 -10
 ap inc 5
 ap dec 5
-ap ap add 10 20
-x0
-x1
-ap ap mul 4 2
-ap ap eq x0 x0
-ap ap eq 1 2
+ap ap add 10 20 = 30
+ap ap mul 4 2 = 8
+ap ap eq x0 x0 = t
+ap ap eq 1 2 = f
+ap ap ap s add inc 1 = 3
+ap ap ap s mul ap add 1 6 = 42
+ap ap ap c add 1 2 = 3
+ap ap ap b inc dec 5 = 5
+ap ap t 1 5 = 1
+ap ap t ap inc 5 t = 6
+ap ap f 1 5 = 5
+ap pwr2 = 1024
+ap ap cons 7 ap ap cons 7 nil
