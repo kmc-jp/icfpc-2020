@@ -61,8 +61,8 @@ class Interpreter {
 public:
   Interpreter();
 
-  void run(const std::string& prog);
-  void run(const std::vector<Token>& tokens);
+  void run(std::ostream& os, const std::string& prog);
+  void run(std::ostream& os, const std::vector<Token>& tokens);
 
 private:
   std::shared_ptr<Environment> env;

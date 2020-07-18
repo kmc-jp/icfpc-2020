@@ -324,11 +324,11 @@ Interpreter::Interpreter()
     : env(std::make_shared<Environment>())
 {}
 
-void Interpreter::run(const std::string& prog) {
-    run(tokenize(prog));
+void Interpreter::run(std::ostream& os, const std::string& prog) {
+    run(os, tokenize(prog));
 }
 
-void Interpreter::run(const std::vector<Token>& tokens) {
+void Interpreter::run(std::ostream& os, const std::vector<Token>& tokens) {
     if(tokens.empty()) return;
     if(tokens.size() >= 2u && tokens[0].type == TokenType::Variable && tokens[1].type == TokenType::Equality) { // decl
         const auto id = tokens[0].immediate;
@@ -336,6 +336,6 @@ void Interpreter::run(const std::vector<Token>& tokens) {
     } else { // eval
         auto tree = parse(tokens);
         tree = eval(tree, env);
-        dump(std::cout, tree, true, env);
+        dump(os, tree, true, env);
     }
 }
