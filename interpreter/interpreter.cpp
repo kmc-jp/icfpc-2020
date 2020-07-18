@@ -1,5 +1,6 @@
 #include <iostream>
 #include <stdexcept>
+#include "lexer.hpp"
 #include "interpreter.hpp"
 
 auto id = [] (const ApplyPtr& ap) { return ap; };
@@ -66,6 +67,7 @@ void dump(const ApplyPtr& ap, int level) {
       case TokenType::Nil: std::cerr << "Nil"; break;
       case TokenType::Cons: std::cerr << "Cons"; break;
       case TokenType::Number: std::cerr << "N[" << ap->ins.immediate << "]"; break;
+      case TokenType::Variable: std::cerr << "Var[" << ap->ins.immediate << "]"; break;
       default: std::cerr << static_cast<int>(ap->ins.type);
     }
   }
@@ -76,26 +78,26 @@ void dump(const ApplyPtr& ap) {
   std::cerr << std::endl;
 }
 
-ApplyPtr apply(const ApplyPtr& ap) {
+ApplyPtr eval(const ApplyPtr& ap, std::shared_ptr<Environment> const& env) {
   if (ap->is_apply()) {
-    auto op = apply(ap->lhs);
+    auto op = eval(ap->lhs, env);
     switch (op->ins.type) {
       case TokenType::Succ:
         {
-          auto num = apply(ap->rhs)->ins.immediate;
+          auto num = eval(ap->rhs, env)->ins.immediate;
           return make_apply(number(num + 1));
         }
       case TokenType::Pred:
         {
-          auto num = apply(ap->rhs)->ins.immediate;
+          auto num = eval(ap->rhs, env)->ins.immediate;
           return make_apply(number(num - 1));
         }
       case TokenType::Sum:
         {
           auto lhs = ap->rhs;
           return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
-            auto lval = apply(lhs)->ins.immediate;
-            auto rval = apply(rhs)->ins.immediate;
+            auto lval = eval(lhs, env)->ins.immediate;
+            auto rval = eval(rhs, env)->ins.immediate;
             return make_apply(number(lval + rval));
           });
         }
@@ -103,8 +105,8 @@ ApplyPtr apply(const ApplyPtr& ap) {
         {
           auto lhs = ap->rhs;
           return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
-            auto lval = apply(lhs)->ins.immediate;
-            auto rval = apply(rhs)->ins.immediate;
+            auto lval = eval(lhs, env)->ins.immediate;
+            auto rval = eval(rhs, env)->ins.immediate;
             return make_apply(number(lval * rval));
           });
         }
@@ -112,8 +114,8 @@ ApplyPtr apply(const ApplyPtr& ap) {
         {
           auto lhs = ap->rhs;
           return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
-            auto lval = apply(lhs)->ins.immediate;
-            auto rval = apply(rhs)->ins.immediate;
+            auto lval = eval(lhs, env)->ins.immediate;
+            auto rval = eval(rhs, env)->ins.immediate;
             return make_apply({lval == rval ? TokenType::True : TokenType::False, 0});
           });
         }
@@ -122,7 +124,7 @@ ApplyPtr apply(const ApplyPtr& ap) {
           auto lhs = ap->rhs;
           return make_apply([=] (const ApplyPtr& mhs) -> ApplyPtr {
             return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
-              return apply(make_apply(make_apply(lhs, rhs), apply(make_apply(mhs, rhs))));
+              return eval(make_apply(make_apply(lhs, rhs), eval(make_apply(mhs, rhs), env)), env);
             });
           });
         }
@@ -131,7 +133,7 @@ ApplyPtr apply(const ApplyPtr& ap) {
           auto lhs = ap->rhs;
           return make_apply([=] (const ApplyPtr& mhs) -> ApplyPtr {
             return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
-              return apply(make_apply(make_apply(lhs, rhs), mhs));
+              return eval(make_apply(make_apply(lhs, rhs), mhs), env);
             });
           });
         }
@@ -140,7 +142,7 @@ ApplyPtr apply(const ApplyPtr& ap) {
           auto lhs = ap->rhs;
           return make_apply([=] (const ApplyPtr& mhs) -> ApplyPtr {
             return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
-              return apply(make_apply(lhs, apply(make_apply(mhs, rhs))));
+              return eval(make_apply(lhs, eval(make_apply(mhs, rhs), env)), env);
             });
           });
         }
@@ -148,31 +150,29 @@ ApplyPtr apply(const ApplyPtr& ap) {
         {
           auto lhs = ap->rhs;
           return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
-            return apply(lhs);
+            return eval(lhs, env);
           });
         }
       case TokenType::False:
         {
           auto lhs = ap->rhs;
           return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
-            return apply(rhs);
+            return eval(rhs, env);
           });
         }
       case TokenType::Pwr2:
         {
-          auto num = apply(ap->rhs)->ins.immediate;
+          auto num = eval(ap->rhs, env)->ins.immediate;
           return make_apply(number(INT64_C(1) << num));
         }
-    case TokenType::I:
-        {
-          return apply(ap->rhs);
-        }
+      case TokenType::I:
+        return eval(ap->rhs, env);
       case TokenType::Cons:
         {
           auto lhs = ap->rhs;
           return make_apply([=] (const ApplyPtr& mhs) -> ApplyPtr {
             return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
-              return apply(make_apply(make_apply(rhs, lhs), mhs));
+              return eval(make_apply(make_apply(rhs, lhs), mhs), env);
             });
           });
         }
@@ -180,10 +180,41 @@ ApplyPtr apply(const ApplyPtr& ap) {
         return make_apply({TokenType::True, 0});
       case TokenType::Partial:
         return op->func(ap->rhs);
+      case TokenType::Variable:
+          if(env->count(ap->lhs->ins.immediate)) {
+            return eval(env->at(ap->lhs->ins.immediate), env);
+          } else {
+            return ap; // can do nothing (stuck)
+          }
       default:
         throw std::runtime_error("BAD apply: ins type is " + std::to_string(static_cast<int>(op->ins.type)));
     }
   } else {
-    return ap;
+    if(ap->ins.type == TokenType::Variable && env->count(ap->ins.immediate)) {
+      return eval(env->at(ap->ins.immediate), env);
+    } else {
+      return ap;
+    }
   }
+}
+
+
+Interpreter::Interpreter()
+    : env(std::make_shared<Environment>())
+{}
+
+void Interpreter::run(const std::string& prog) {
+    run(tokenize(prog));
+}
+
+void Interpreter::run(const std::vector<Token>& tokens) {
+    if(tokens.size() >= 2u && tokens[0].type == TokenType::Variable && tokens[1].type == TokenType::Equality) { // decl
+        const auto id = tokens[0].immediate;
+        (*env)[id] = parse(std::vector<Token>{tokens.begin() + 2, tokens.end()});
+    } else { // eval
+        auto tree = parse(tokens);
+        dump(tree);
+        tree = eval(tree, env);
+        std::cout << tree->ins.immediate << std::endl;
+    }
 }

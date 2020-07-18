@@ -201,6 +201,7 @@ std::vector<Token> tokenize(std::string const& input) {
         while(pos < (int)input.size() && input[pos] != ' ') cur += input[pos++];
 
         if(cur == "ap")            res.push_back(app);
+        else if(cur[0] == ':')     res.push_back({TokenType::Variable, std::stoll(cur.substr(1))}); // todo
         else if(is_number(cur))    res.push_back(number(std::stoll(cur)));
         else if(cur == "inc")      res.push_back({TokenType::Succ, 0});
         else if(cur == "dec")      res.push_back({TokenType::Pred, 0});
