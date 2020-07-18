@@ -117,6 +117,15 @@ ApplyPtr apply(const ApplyPtr& ap) {
             return make_apply({lval == rval ? TokenType::True : TokenType::False, 0});
           });
         }
+      case TokenType::Lt:
+        {
+          auto lhs = ap->rhs;
+          return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
+            auto lval = apply(lhs)->ins.immediate;
+            auto rval = apply(rhs)->ins.immediate;
+            return make_apply({lval < rval ? TokenType::True : TokenType::False, 0});
+          });
+        }
       case TokenType::S:
         {
           auto lhs = ap->rhs;
