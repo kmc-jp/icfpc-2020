@@ -48,21 +48,31 @@ ApplyPtr parse(const std::vector<Token>& tokens) {
   return parse(begin(tokens), end(tokens)).first;
 }
 
-void dump(const ApplyPtr& ap, int level) {
+bool isnil(const ApplyPtr& ap) {
+  if(ap->is_object()) {
+    return std::dynamic_pointer_cast<Object>(ap)->ins.type == TokenType::Nil;
+  } else {
+    return false;
+  }
+}
+
+void dump(const ApplyPtr& ap, int level, bool enable_eval, const std::shared_ptr<Environment>& env) {
   if (ap->is_apply()) {
-    auto ap_ap = std::dynamic_pointer_cast<ApplyPair>(ap);
-    std::cerr << std::string(level, '.') << "(" << std::endl;
-    dump(ap_ap->lhs, level+1);
-    std::cerr << std::endl;
-    dump(ap_ap->rhs, level+1);
-    std::cerr << std::endl;
-    std::cerr << std::string(level, '.') << ")";
+    if (enable_eval) {
+      dump(eval(ap, env), level, enable_eval, env);
+    } else {
+      auto ap_ap = std::dynamic_pointer_cast<ApplyPair>(ap);
+      std::cerr << "(";
+      dump(ap_ap->lhs, level+1, enable_eval, env);
+      std::cerr << " ";
+      dump(ap_ap->rhs, level+1, enable_eval, env);
+      std::cerr << ")";
+    }
   } else if (ap->is_partial()) {
     auto ap_pf = std::dynamic_pointer_cast<Partial>(ap);
-    std::cerr << std::string(level, '.') << "P[" << ap_pf->func_name << "]";
+    std::cerr << "P[" << ap_pf->func_name << "]";
   } else if (ap->is_object()) {
     auto ap_obj = std::dynamic_pointer_cast<Object>(ap);
-    std::cerr << std::string(level, '.');
     auto type = ap_obj->ins.type;
     switch (type) {
       case TokenType::Equality: std::cerr << "="; break;
@@ -85,25 +95,35 @@ void dump(const ApplyPtr& ap, int level) {
       case TokenType::Cons: std::cerr << "Cons"; break;
       case TokenType::Car: std::cerr << "Car"; break;
       case TokenType::Cdr: std::cerr << "Cdr"; break;
-      case TokenType::Number: std::cerr << "N[" << ap_obj->ins.immediate << "]"; break;
-      case TokenType::Variable: std::cerr << "Var[" << ap_obj->ins.immediate << "]"; break;
+      case TokenType::Number: std::cerr << ap_obj->ins.immediate; break;
+      case TokenType::Variable:
+        if (enable_eval) {
+          dump(eval(env->at(ap_obj->ins.immediate), env), level, enable_eval, env);
+        } else {
+          std::cerr << "Var[" << ap_obj->ins.immediate << "]"; break;
+        }
+        break;
       default: std::cerr << static_cast<int>(ap_obj->ins.type);
     }
   } else if (ap->is_cons_pair()) {
     auto ap_cons = std::dynamic_pointer_cast<ConsPair>(ap);
-    std::cerr << std::string(level, '.') << "'(" << std::endl;
-    dump(ap_cons->car, level+1);
-    std::cerr << std::endl;
-    dump(ap_cons->cdr, level+1);
-    std::cerr << std::endl;
-    std::cerr << std::string(level, '.') << ")";
+    std::cerr << "[";
+    dump(ap_cons->car, level+1, enable_eval, env);
+    std::cerr << ", ";
+    while (ap_cons->cdr->is_cons_pair()) {
+      ap_cons = std::dynamic_pointer_cast<ConsPair>(ap_cons->cdr);
+      dump(ap_cons->car, level+1, enable_eval, env);
+      std::cerr << ", ";
+    }
+    dump(ap_cons->cdr, level+1, enable_eval, env);
+    std::cerr << "]";
   } else {
     throw std::runtime_error("Unknown element");
   }
 }
 
-void dump(const ApplyPtr& ap) {
-  dump(ap, 0);
+void dump(const ApplyPtr& ap, bool enable_eval, const std::shared_ptr<Environment>& env) {
+  dump(ap, 0, enable_eval, env);
   std::cerr << std::endl;
 }
 
@@ -111,12 +131,12 @@ int64_t get_int(const ApplyPtr& ap) {
   if (ap->is_object()) {
     auto ap_obj = std::dynamic_pointer_cast<Object>(ap);
     if (ap_obj->ins.type != TokenType::Number) {
-      dump(ap);
+      dump(ap, false, {});
       throw std::runtime_error("Failed to get_int: not a Number");
     }
     return ap_obj->ins.immediate;
   } else {
-    dump(ap);
+    dump(ap, false, {});
     throw std::runtime_error("Failed to get_int: not an Object");
   }
 }
@@ -267,10 +287,11 @@ ApplyPtr eval(const ApplyPtr& ap, std::shared_ptr<Environment> const& env) {
         case TokenType::IsNil: // ???
           {
             const auto l = eval(ap_ap->rhs, env);
-            if(l->is_object()) {
-              if(std::dynamic_pointer_cast<Object>(l)->ins.type == TokenType::Nil) return make_apply({TokenType::True, 1});
-              else                              return make_apply({TokenType::False, 0});
-            } else                              return make_apply({TokenType::False, 0});
+            if(isnil(l)) {
+              return make_apply({TokenType::True, 1});
+            } else {
+              return make_apply({TokenType::False, 0});
+            }
           }
         case TokenType::Nil:
           return make_apply({TokenType::True, 1});
@@ -314,8 +335,7 @@ void Interpreter::run(const std::vector<Token>& tokens) {
         (*env)[id] = parse(tokens.begin() + 2, tokens.end()).first;
     } else { // eval
         auto tree = parse(tokens);
-        dump(tree);
         tree = eval(tree, env);
-        dump(tree);
+        dump(tree, true, env);
     }
 }
