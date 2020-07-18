@@ -316,6 +316,6 @@ void Interpreter::run(const std::vector<Token>& tokens) {
         auto tree = parse(tokens);
         dump(tree);
         tree = eval(tree, env);
-        std::cout << tree->ins.immediate << std::endl;
+        dump(tree);
     }
 }
