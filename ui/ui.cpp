@@ -50,8 +50,7 @@ int main(){
             }
         }
         std::vector < std::vector < pair < int, int >> > ps(1);
-        int inf = 500;
-        int minx = inf, maxx = -inf, miny = inf, maxy = -inf;
+        int minx = 0, maxx = 0, miny = 0, maxy = 0;
         for(int i = 0; i < str.size(); i++){
             if(str[i] == "Nil"){
                 ps.push_back(std::vector < pair < int, int >> ());
@@ -71,7 +70,7 @@ int main(){
                 field[p.second - miny][p.first - minx] = '0' + i;
             }
         }
-        field[miny][minx] = '+';
+        field[-miny][-minx] = '+';
         for(auto l:field){
             cout << l << endl;
         }
