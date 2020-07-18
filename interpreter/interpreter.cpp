@@ -56,87 +56,87 @@ bool isnil(const ApplyPtr& ap) {
   }
 }
 
-void dump(const ApplyPtr& ap, int level, bool enable_eval, const std::shared_ptr<Environment>& env) {
+void dump(std::ostream& os, const ApplyPtr& ap, int level, bool enable_eval, const std::shared_ptr<Environment>& env) {
   if (ap->is_apply()) {
     if (enable_eval) {
-      dump(eval(ap, env), level, enable_eval, env);
+      dump(os, eval(ap, env), level, enable_eval, env);
     } else {
       auto ap_ap = std::dynamic_pointer_cast<ApplyPair>(ap);
-      std::cerr << "(";
-      dump(ap_ap->lhs, level+1, enable_eval, env);
-      std::cerr << " ";
-      dump(ap_ap->rhs, level+1, enable_eval, env);
-      std::cerr << ")";
+      os << "(";
+      dump(os, ap_ap->lhs, level+1, enable_eval, env);
+      os << " ";
+      dump(os, ap_ap->rhs, level+1, enable_eval, env);
+      os << ")";
     }
   } else if (ap->is_partial()) {
     auto ap_pf = std::dynamic_pointer_cast<Partial>(ap);
-    std::cerr << "P[" << ap_pf->func_name << "]";
+    os << "P[" << ap_pf->func_name << "]";
   } else if (ap->is_object()) {
     auto ap_obj = std::dynamic_pointer_cast<Object>(ap);
     auto type = ap_obj->ins.type;
     switch (type) {
-      case TokenType::Equality: std::cerr << "="; break;
-      case TokenType::Succ: std::cerr << "Inc"; break;
-      case TokenType::Pred: std::cerr << "Dec"; break;
-      case TokenType::Sum: std::cerr << "+"; break;
-      case TokenType::Product: std::cerr << "*"; break;
-      case TokenType::Division: std::cerr << "/"; break;
-      case TokenType::Eq: std::cerr << "=="; break;
-      case TokenType::Lt: std::cerr << "<"; break;
-      case TokenType::S: std::cerr << "S"; break;
-      case TokenType::B: std::cerr << "B"; break;
-      case TokenType::C: std::cerr << "C"; break;
-      case TokenType::Pwr2: std::cerr << "Pwr2"; break;
-      case TokenType::I: std::cerr << "I"; break;
-      case TokenType::True: std::cerr << "True"; break;
-      case TokenType::False: std::cerr << "False"; break;
-      case TokenType::Nil: std::cerr << "Nil"; break;
-      case TokenType::IsNil: std::cerr << "IsNil"; break;
-      case TokenType::Cons: std::cerr << "Cons"; break;
-      case TokenType::Car: std::cerr << "Car"; break;
-      case TokenType::Cdr: std::cerr << "Cdr"; break;
-      case TokenType::Number: std::cerr << ap_obj->ins.immediate; break;
+      case TokenType::Equality: os << "="; break;
+      case TokenType::Succ: os << "Inc"; break;
+      case TokenType::Pred: os << "Dec"; break;
+      case TokenType::Sum: os << "+"; break;
+      case TokenType::Product: os << "*"; break;
+      case TokenType::Division: os << "/"; break;
+      case TokenType::Eq: os << "=="; break;
+      case TokenType::Lt: os << "<"; break;
+      case TokenType::S: os << "S"; break;
+      case TokenType::B: os << "B"; break;
+      case TokenType::C: os << "C"; break;
+      case TokenType::Pwr2: os << "Pwr2"; break;
+      case TokenType::I: os << "I"; break;
+      case TokenType::True: os << "True"; break;
+      case TokenType::False: os << "False"; break;
+      case TokenType::Nil: os << "Nil"; break;
+      case TokenType::IsNil: os << "IsNil"; break;
+      case TokenType::Cons: os << "Cons"; break;
+      case TokenType::Car: os << "Car"; break;
+      case TokenType::Cdr: os << "Cdr"; break;
+      case TokenType::Number: os << ap_obj->ins.immediate; break;
       case TokenType::Variable:
         if (enable_eval) {
-          dump(eval(env->at(ap_obj->ins.immediate), env), level, enable_eval, env);
+          dump(os, eval(env->at(ap_obj->ins.immediate), env), level, enable_eval, env);
         } else {
-          std::cerr << "Var[" << ap_obj->ins.immediate << "]"; break;
+          os << "Var[" << ap_obj->ins.immediate << "]"; break;
         }
         break;
-      default: std::cerr << static_cast<int>(ap_obj->ins.type);
+      default: os << static_cast<int>(ap_obj->ins.type);
     }
   } else if (ap->is_cons_pair()) {
     auto ap_cons = std::dynamic_pointer_cast<ConsPair>(ap);
-    std::cerr << "[";
-    dump(ap_cons->car, level+1, enable_eval, env);
-    std::cerr << ", ";
+    os << "[";
+    dump(os, ap_cons->car, level+1, enable_eval, env);
+    os << ", ";
     while (ap_cons->cdr->is_cons_pair()) {
       ap_cons = std::dynamic_pointer_cast<ConsPair>(ap_cons->cdr);
-      dump(ap_cons->car, level+1, enable_eval, env);
-      std::cerr << ", ";
+      dump(os, ap_cons->car, level+1, enable_eval, env);
+      os << ", ";
     }
-    dump(ap_cons->cdr, level+1, enable_eval, env);
-    std::cerr << "]";
+    dump(os, ap_cons->cdr, level+1, enable_eval, env);
+    os << "]";
   } else {
     throw std::runtime_error("Unknown element");
   }
 }
 
-void dump(const ApplyPtr& ap, bool enable_eval, const std::shared_ptr<Environment>& env) {
-  dump(ap, 0, enable_eval, env);
-  std::cerr << std::endl;
+void dump(std::ostream& os, const ApplyPtr& ap, bool enable_eval, const std::shared_ptr<Environment>& env) {
+  dump(os, ap, 0, enable_eval, env);
+  os << std::endl;
 }
 
 int64_t get_int(const ApplyPtr& ap) {
   if (ap->is_object()) {
     auto ap_obj = std::dynamic_pointer_cast<Object>(ap);
     if (ap_obj->ins.type != TokenType::Number) {
-      dump(ap, false, {});
+      dump(std::cerr, ap, false, {});
       throw std::runtime_error("Failed to get_int: not a Number");
     }
     return ap_obj->ins.immediate;
   } else {
-    dump(ap, false, {});
+    dump(std::cerr, ap, false, {});
     throw std::runtime_error("Failed to get_int: not an Object");
   }
 }
@@ -336,6 +336,6 @@ void Interpreter::run(const std::vector<Token>& tokens) {
     } else { // eval
         auto tree = parse(tokens);
         tree = eval(tree, env);
-        dump(tree, true, env);
+        dump(std::cout, tree, true, env);
     }
 }
