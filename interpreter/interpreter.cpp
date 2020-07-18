@@ -214,7 +214,7 @@ ApplyPtr eval(const ApplyPtr& ap, std::shared_ptr<Environment> const& env) {
           else                              return make_apply({TokenType::False, 0});
         }
       case TokenType::Nil:
-        return make_apply({TokenType::True, 0});
+        return make_apply({TokenType::True, 1});
       case TokenType::Partial:
         return op->func(ap->rhs);
       case TokenType::Variable:
