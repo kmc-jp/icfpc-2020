@@ -10,11 +10,13 @@ using namespace std;
 
 int main(){
     Interpreter interp;
+
     std::ifstream fin("../interpreter/test/interpreter/galaxy.txt");
     std::string prog;
     while(std::getline(fin, prog)){
         interp.run(std::cout, prog);
     }
+    interp.run(std::cout, ":1999 = ap ap :1338 nil ap ap cons 0 0");
     int var_id = 2000;
     std::stringstream ss;
     std::string ls;
