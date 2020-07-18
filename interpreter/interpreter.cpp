@@ -176,13 +176,12 @@ ApplyPtr eval(const ApplyPtr& ap, std::shared_ptr<Environment> const& env) {
       case TokenType::True:
         {
           auto lhs = ap->rhs;
-          return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
+          return make_apply([=] ([[maybe_unused]] const ApplyPtr& rhs) -> ApplyPtr {
             return eval(lhs, env);
           });
         }
       case TokenType::False:
         {
-          auto lhs = ap->rhs;
           return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
             return eval(rhs, env);
           });
