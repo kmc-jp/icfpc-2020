@@ -116,7 +116,7 @@ ApplyPtr eval(const ApplyPtr& ap, std::shared_ptr<Environment> const& env) {
           return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
             auto lval = eval(lhs, env)->ins.immediate;
             auto rval = eval(rhs, env)->ins.immediate;
-            return make_apply({lval == rval ? TokenType::True : TokenType::False, 0});
+            return make_apply({lval == rval ? TokenType::True : TokenType::False, lval == rval ? 1 : 0});
           });
         }
       case TokenType::S:

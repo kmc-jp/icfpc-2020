@@ -1,0 +1,10 @@
+0
+-10
+ap inc 5
+ap dec 5
+ap ap add 10 20
+x0
+x1
+ap ap mul 4 2
+ap ap eq x0 x0
+ap ap eq 1 2
