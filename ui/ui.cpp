@@ -77,9 +77,11 @@ int main(){
             }
         }
         field[-miny][-minx] = '+';
+        std::ofstream fout("out.txt");
         for(auto l:field){
-            cout << l << endl;
+            fout << l << endl;
         }
+        fout.close();
     }
     return 0;
 }
