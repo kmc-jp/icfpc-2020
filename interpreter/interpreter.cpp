@@ -62,6 +62,7 @@ void dump(const ApplyPtr& ap, int level) {
       case TokenType::B: std::cerr << "B"; break;
       case TokenType::C: std::cerr << "C"; break;
       case TokenType::Pwr2: std::cerr << "Pwr2"; break;
+      case TokenType::I:    std::cerr << "I"; break;
       case TokenType::Nil: std::cerr << "Nil"; break;
       case TokenType::Cons: std::cerr << "Cons"; break;
       case TokenType::Number: std::cerr << "N[" << ap->ins.immediate << "]"; break;
@@ -161,6 +162,10 @@ ApplyPtr apply(const ApplyPtr& ap) {
         {
           auto num = apply(ap->rhs)->ins.immediate;
           return make_apply(number(INT64_C(1) << num));
+        }
+    case TokenType::I:
+        {
+          return apply(ap->rhs);
         }
       case TokenType::Cons:
         {
