@@ -151,7 +151,7 @@ ApplyPtr eval(const ApplyPtr& ap, std::shared_ptr<Environment> const& env) {
           auto lhs = ap->rhs;
           return make_apply([=] (const ApplyPtr& mhs) -> ApplyPtr {
             return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
-              return eval(make_apply(make_apply(lhs, rhs), eval(make_apply(mhs, rhs), env)), env);
+              return eval(make_apply(make_apply(lhs, rhs), make_apply(mhs, rhs)), env);
             });
           });
         }
@@ -219,7 +219,8 @@ ApplyPtr eval(const ApplyPtr& ap, std::shared_ptr<Environment> const& env) {
         return op->func(ap->rhs);
       case TokenType::Variable:
           if(env->count(ap->lhs->ins.immediate)) {
-            return make_apply(eval(env->at(ap->lhs->ins.immediate), env), ap->rhs);
+            (*env)[ap->lhs->ins.immediate] = eval(env->at(ap->lhs->ins.immediate), env);
+            return make_apply(env->at(ap->lhs->ins.immediate), ap->rhs);
           } else {
             throw std::runtime_error("BAD apply: apply variable"); // can do nothing (stuck)
           }
@@ -228,7 +229,7 @@ ApplyPtr eval(const ApplyPtr& ap, std::shared_ptr<Environment> const& env) {
     }
   } else {
     if(ap->ins.type == TokenType::Variable && env->count(ap->ins.immediate)) {
-      return eval(env->at(ap->ins.immediate), env);
+      return (*env)[ap->ins.immediate] = eval(env->at(ap->ins.immediate), env);
     } else {
       return ap;
     }
@@ -245,6 +246,7 @@ void Interpreter::run(const std::string& prog) {
 }
 
 void Interpreter::run(const std::vector<Token>& tokens) {
+    if(tokens.empty()) return;
     if(tokens.size() >= 2u && tokens[0].type == TokenType::Variable && tokens[1].type == TokenType::Equality) { // decl
         const auto id = tokens[0].immediate;
         (*env)[id] = parse(std::vector<Token>{tokens.begin() + 2, tokens.end()});
