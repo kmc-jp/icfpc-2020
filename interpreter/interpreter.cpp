@@ -176,13 +176,12 @@ ApplyPtr eval(const ApplyPtr& ap, std::shared_ptr<Environment> const& env) {
       case TokenType::True:
         {
           auto lhs = ap->rhs;
-          return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
+          return make_apply([=] ([[maybe_unused]] const ApplyPtr& rhs) -> ApplyPtr {
             return eval(lhs, env);
           });
         }
       case TokenType::False:
         {
-          auto lhs = ap->rhs;
           return make_apply([=] (const ApplyPtr& rhs) -> ApplyPtr {
             return eval(rhs, env);
           });
@@ -242,7 +241,7 @@ void Interpreter::run(const std::vector<Token>& tokens) {
     if(tokens.empty()) return;
     if(tokens.size() >= 2u && tokens[0].type == TokenType::Variable && tokens[1].type == TokenType::Equality) { // decl
         const auto id = tokens[0].immediate;
-        (*env)[id] = parse(std::vector<Token>{tokens.begin() + 2, tokens.end()});
+        (*env)[id] = parse(tokens.begin() + 2, tokens.end()).first;
     } else { // eval
         auto tree = parse(tokens);
         dump(tree);
