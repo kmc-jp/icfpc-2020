@@ -5,6 +5,8 @@
 #include <utility>
 #include "../interpreter/lexer.hpp"
 #include "../interpreter/interpreter.hpp"
+#include "../demodulator/demodulator.hpp"
+#include "../modulator/modulator.hpp"
 
 using namespace std;
 
@@ -28,11 +30,12 @@ int main(){
                    prog);
         interp.run(ss, ":" + std::to_string(var_id));
         std::getline(ss, ls);
+        std::cout << ls << std::endl;
         var_id++;
         interp.run(std::cout,
                    ":" + std::to_string(var_id) + " = ap car ap cdr :" + std::to_string(var_id - 1));
         var_id++;
-        std::cout << ls << std::endl;
+        string data = "";
         int count = 0;
         int depth = 0;
         for(int i = 0; i < ls.size(); i++){
@@ -41,17 +44,53 @@ int main(){
             }else if(ls[i] == ']'){
                 depth--;
                 if(depth == 1){
-                    ls = ls.substr(i + 2);
+                    data = ls.substr(i + 2);
                     break;
                 }
             }
         }
+        while(ls[1] == '1'){
+            cout << data << endl;
+            data = data.substr(1, data.size() - 7);
+            cout << modulate(data) << endl;
+            cin >> data;
+            vector <Token> tk = demodulate(data);
+            data = "";
+            for(auto t: tk){
+                switch(t.type){
+                    case TokenType::Number:
+                        data += " " + to_string(t.immediate);
+                        break;
+                    case TokenType::Cons:
+                        data += " cons";
+                        break;
+                    case TokenType::Nil:
+                        data += " nil";
+                        break;
+                    case TokenType::Apply:
+                        data += " ap";
+                        break;
+                    default:
+                        break;
+                }
+            }
+            cout << data << endl;
+            cout << ":" + std::to_string(var_id) + " = ap ap :1338 :" + std::to_string(var_id - 1) + data +";" << endl;
+            interp.run(cout,
+                       ":" + std::to_string(var_id) + " = ap ap :1338 :" + std::to_string(var_id - 1) + data);
+            interp.run(ss, ":" + std::to_string(var_id));
+            std::getline(ss, ls);
+            var_id++;
+            interp.run(std::cout,
+                       ":" + std::to_string(var_id) + " = ap car ap cdr :" + std::to_string(var_id - 1) + "\n");
+            var_id++;
+        }
         std::vector <std::string> str;
-        for(int i = 0; i < ls.size(); i++){
-            if(ls[i] == ' '){
+        for(int i = 0; i < data.size(); i++){
+            if(data[i] == ' '){
                 str.push_back("");
-            }else if(ls[i] != '[' && ls[i] != ']' && ls[i] != ','){
-                str.back().push_back(ls[i]);
+            }else if(data[i] != '[' && data[i] != ']' && data[i] != ','){
+                str.back().push_back(data[i]);
             }
         }
         std::vector < std::vector < pair < int, int >> > ps(1);

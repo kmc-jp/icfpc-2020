@@ -24,7 +24,7 @@ string string_of_int(int x){
     return s;
 }
 
-void parse_list(const string &s, int &idx){
+string parse_list(const string &s, int &idx){
     string ans;
     string tmp;
     for(; idx < s.size(); idx++){
@@ -34,7 +34,7 @@ void parse_list(const string &s, int &idx){
             parse_list(s, idx);
         }else if(s[idx] == ']'){
             ans += "00";
-            return;
+            break;
         }else if(isdigit(s[idx]) || s[idx] == '-'){
             ans += "11";
             bool minus = (s[idx] == '-');
@@ -56,7 +56,6 @@ void parse_list(const string &s, int &idx){
 }
 
 string modulate(const string s){
-    getline(cin, s);
     if(isdigit(s[0]) || s[0] == '-'){
         return string_of_int(stoi(s));
     }else{
