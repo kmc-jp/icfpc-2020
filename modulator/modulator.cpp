@@ -57,7 +57,7 @@ void parse_list(const string &s, int &idx){
 
 int main(){
     string s;
-    cin >> s;
+    getline(cin, s);
     if(isdigit(s[0]) || s[0] == '-'){
         cout << string_of_int(stoi(s));
     }else{
