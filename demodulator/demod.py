@@ -2,6 +2,7 @@ import sys
 
 # num[i:]を解釈し、その結果と解釈した部分の長さのペアを返す
 def modulate(num, i):
+    print("i:",i)
     if num[i : i + 2] == "00":
         return None, 2
     elif num[i : i + 2] == "11":
