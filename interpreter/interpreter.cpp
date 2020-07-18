@@ -58,7 +58,9 @@ void dump(const ApplyPtr& ap, int level) {
     switch (type) {
       case TokenType::Sum: std::cerr << "+"; break;
       case TokenType::Product: std::cerr << "*"; break;
+      case TokenType::Division: std::cerr << "/"; break;
       case TokenType::Eq: std::cerr << "=="; break;
+      case TokenType::Lt: std::cerr << "<"; break;
       case TokenType::S: std::cerr << "S"; break;
       case TokenType::B: std::cerr << "B"; break;
       case TokenType::C: std::cerr << "C"; break;
@@ -66,6 +68,8 @@ void dump(const ApplyPtr& ap, int level) {
       case TokenType::I:    std::cerr << "I"; break;
       case TokenType::Nil: std::cerr << "Nil"; break;
       case TokenType::Cons: std::cerr << "Cons"; break;
+      case TokenType::Car: std::cerr << "Car"; break;
+      case TokenType::Cdr: std::cerr << "Cdr"; break;
       case TokenType::Number: std::cerr << "N[" << ap->ins.immediate << "]"; break;
       case TokenType::Variable: std::cerr << "Var[" << ap->ins.immediate << "]"; break;
       default: std::cerr << static_cast<int>(ap->ins.type);
