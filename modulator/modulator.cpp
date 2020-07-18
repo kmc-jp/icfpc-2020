@@ -1,6 +1,4 @@
-#include <iostream>
-#include <string>
-#include <algorithm>
+#include "modulator.hpp"
 
 using namespace std;
 
@@ -27,17 +25,18 @@ string string_of_int(int x){
 }
 
 void parse_list(const string &s, int &idx){
+    string ans;
     string tmp;
     for(; idx < s.size(); idx++){
         if(s[idx] == '['){
-            cout << "11";
+            ans += "11";
             idx++;
             parse_list(s, idx);
         }else if(s[idx] == ']'){
-            cout << "00";
+            ans += "00";
             return;
         }else if(isdigit(s[idx]) || s[idx] == '-'){
-            cout << "11";
+            ans += "11";
             bool minus = (s[idx] == '-');
             if(minus) idx++;
             int num = 0;
@@ -50,20 +49,18 @@ void parse_list(const string &s, int &idx){
                 }
             }
             if(minus) num = -num;
-            cout << string_of_int(num);
+            ans += string_of_int(num);
         }
     }
+    return ans;
 }
 
-int main(){
-    string s;
+string modulate(const string s){
     getline(cin, s);
     if(isdigit(s[0]) || s[0] == '-'){
-        cout << string_of_int(stoi(s));
+        return string_of_int(stoi(s));
     }else{
         int idx = 1;
-        parse_list(s, idx);
+        return parse_list(s, idx);
     }
-    cout << endl;
-    return 0;
 }
