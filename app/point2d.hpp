@@ -11,7 +11,7 @@ struct point {
       return "(" + std::to_string(x) + ", " + std::to_string(y) + ")";
     }
   std::string to_list_string() const {
-    return "[" + std::to_string(x) + ", " + std::to_string(y) + ", Nil]";
+    return "[" + std::to_string(x) + ", " + std::to_string(y) + "]";
   }
 };
 
