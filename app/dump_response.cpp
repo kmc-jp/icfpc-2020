@@ -45,6 +45,7 @@ void dump_game_response(GameResponse gameResponse) {
   dump_game_state(gameResponse.gameState);
 }
 
+/*
 int main() {
   std::string s =
       "110110000111011000011111011110000100000000110101111011110001000000000110"
@@ -57,3 +58,19 @@ int main() {
   auto gameResponse = getGameResponse(demodulateList(s));
   dump_game_response(gameResponse);
 }
+->
+status: 1
+gameStage: 1
+staticGameInfo: 256 0 64 128 1
+game response:
+gameTick: 0
+x1: 128
+role: 1
+shipId: 0
+position: (3, 48)
+velocity: (0, 0)
+role: 0
+shipId: 1
+position: (-3, -48)
+velocity: (0, 0)
+*/
