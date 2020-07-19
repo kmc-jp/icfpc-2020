@@ -15,9 +15,9 @@ struct Ship {
 };
 
 struct ShipAndCommand {
-  std::vector<Command> appliedCommands;  // list of commands applied to the ship
-                                         // on the previous tick
-  Ship ship;                             // ship state description
+  std::vector<CommandPtr> appliedCommands;  // list of commands applied to the
+                                            // ship on the previous tick
+  Ship ship;  // ship state description
 };
 
 struct GameState {
