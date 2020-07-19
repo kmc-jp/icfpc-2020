@@ -35,6 +35,7 @@ std::string makeCommandsRequest(std::string playerKey, std::vector<CommandPtr> c
 			coms += ",";
 		}
 		coms += "Nil]";
+		req += coms;
 	}
 	req += ",Nil]";
 	return req;
