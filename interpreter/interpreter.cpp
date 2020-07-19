@@ -56,87 +56,86 @@ bool isnil(const ApplyPtr& ap) {
   }
 }
 
-void dump(const ApplyPtr& ap, int level, bool enable_eval, const std::shared_ptr<Environment>& env) {
+std::string string_of_tree(const ApplyPtr& ap, int level, bool enable_eval, const std::shared_ptr<Environment>& env) {
+  std::string res;
   if (ap->is_apply()) {
     if (enable_eval) {
-      dump(eval(ap, env), level, enable_eval, env);
+      res += string_of_tree(eval(ap, env), level, enable_eval, env);
     } else {
       auto ap_ap = std::dynamic_pointer_cast<ApplyPair>(ap);
-      std::cerr << "(";
-      dump(ap_ap->lhs, level+1, enable_eval, env);
-      std::cerr << " ";
-      dump(ap_ap->rhs, level+1, enable_eval, env);
-      std::cerr << ")";
+      res += "(";
+      res += string_of_tree(ap_ap->lhs, level+1, enable_eval, env);
+      res += " ";
+      res += string_of_tree(ap_ap->rhs, level+1, enable_eval, env);
+      res += ")";
     }
   } else if (ap->is_partial()) {
     auto ap_pf = std::dynamic_pointer_cast<Partial>(ap);
-    std::cerr << "P[" << ap_pf->func_name << "]";
+    res += "P[" + ap_pf->func_name + "]";
   } else if (ap->is_object()) {
     auto ap_obj = std::dynamic_pointer_cast<Object>(ap);
     auto type = ap_obj->ins.type;
     switch (type) {
-      case TokenType::Equality: std::cerr << "="; break;
-      case TokenType::Succ: std::cerr << "Inc"; break;
-      case TokenType::Pred: std::cerr << "Dec"; break;
-      case TokenType::Sum: std::cerr << "+"; break;
-      case TokenType::Product: std::cerr << "*"; break;
-      case TokenType::Division: std::cerr << "/"; break;
-      case TokenType::Eq: std::cerr << "=="; break;
-      case TokenType::Lt: std::cerr << "<"; break;
-      case TokenType::S: std::cerr << "S"; break;
-      case TokenType::B: std::cerr << "B"; break;
-      case TokenType::C: std::cerr << "C"; break;
-      case TokenType::Pwr2: std::cerr << "Pwr2"; break;
-      case TokenType::I: std::cerr << "I"; break;
-      case TokenType::True: std::cerr << "True"; break;
-      case TokenType::False: std::cerr << "False"; break;
-      case TokenType::Nil: std::cerr << "Nil"; break;
-      case TokenType::IsNil: std::cerr << "IsNil"; break;
-      case TokenType::Cons: std::cerr << "Cons"; break;
-      case TokenType::Car: std::cerr << "Car"; break;
-      case TokenType::Cdr: std::cerr << "Cdr"; break;
-      case TokenType::Number: std::cerr << ap_obj->ins.immediate; break;
+      case TokenType::Equality: res += "="; break;
+      case TokenType::Succ: res += "Inc"; break;
+      case TokenType::Pred: res += "Dec"; break;
+      case TokenType::Sum: res += "+"; break;
+      case TokenType::Product: res += "*"; break;
+      case TokenType::Division: res += "/"; break;
+      case TokenType::Eq: res += "=="; break;
+      case TokenType::Lt: res += "<"; break;
+      case TokenType::S: res += "S"; break;
+      case TokenType::B: res += "B"; break;
+      case TokenType::C: res += "C"; break;
+      case TokenType::Pwr2: res += "Pwr2"; break;
+      case TokenType::I: res += "I"; break;
+      case TokenType::True: res += "True"; break;
+      case TokenType::False: res += "False"; break;
+      case TokenType::Nil: res += "Nil"; break;
+      case TokenType::IsNil: res += "IsNil"; break;
+      case TokenType::Cons: res += "Cons"; break;
+      case TokenType::Car: res += "Car"; break;
+      case TokenType::Cdr: res += "Cdr"; break;
+      case TokenType::Number: res += std::to_string(ap_obj->ins.immediate); break;
       case TokenType::Variable:
         if (enable_eval) {
-          dump(eval(env->at(ap_obj->ins.immediate), env), level, enable_eval, env);
+          res += string_of_tree(eval(env->at(ap_obj->ins.immediate), env), level, enable_eval, env);
         } else {
-          std::cerr << "Var[" << ap_obj->ins.immediate << "]"; break;
+          res += "Var[" + std::to_string(ap_obj->ins.immediate) + "]"; break;
         }
         break;
-      default: std::cerr << static_cast<int>(ap_obj->ins.type);
+      default: res += std::to_string(static_cast<int>(ap_obj->ins.type));
     }
   } else if (ap->is_cons_pair()) {
     auto ap_cons = std::dynamic_pointer_cast<ConsPair>(ap);
-    std::cerr << "[";
-    dump(ap_cons->car, level+1, enable_eval, env);
-    std::cerr << ", ";
+    res += "[";
+    res += string_of_tree(ap_cons->car, level+1, enable_eval, env);
+    res += ", ";
     while (ap_cons->cdr->is_cons_pair()) {
       ap_cons = std::dynamic_pointer_cast<ConsPair>(ap_cons->cdr);
-      dump(ap_cons->car, level+1, enable_eval, env);
-      std::cerr << ", ";
+      res += string_of_tree(ap_cons->car, level+1, enable_eval, env);
+      res += ", ";
     }
-    dump(ap_cons->cdr, level+1, enable_eval, env);
-    std::cerr << "]";
+    res += string_of_tree(ap_cons->cdr, level+1, enable_eval, env);
+    res += "]";
   } else {
     throw std::runtime_error("Unknown element");
   }
+  return res;
 }
 
-void dump(const ApplyPtr& ap, bool enable_eval, const std::shared_ptr<Environment>& env) {
-  dump(ap, 0, enable_eval, env);
-  std::cerr << std::endl;
+std::string string_of_tree(const ApplyPtr& ap, bool enable_eval, const std::shared_ptr<Environment>& env) {
+  return string_of_tree(ap, 0, enable_eval, env) + "\n";
 }
 
 int64_t get_int(const ApplyPtr& ap) {
   if (ap->is_object()) {
     auto ap_obj = std::dynamic_pointer_cast<Object>(ap);
     if (ap_obj->ins.type != TokenType::Number) {
-      dump(ap, false, {});
       throw std::runtime_error("Failed to get_int: not a Number");
     }
     return ap_obj->ins.immediate;
   } else {
-    dump(ap, false, {});
     throw std::runtime_error("Failed to get_int: not an Object");
   }
 }
@@ -324,18 +323,24 @@ Interpreter::Interpreter()
     : env(std::make_shared<Environment>())
 {}
 
+void Interpreter::run(std::ostream& os, const std::string& prog) {
+  run(os, tokenize(prog));
+}
 void Interpreter::run(const std::string& prog) {
-    run(tokenize(prog));
+  run(std::cout, tokenize(prog));
 }
 
+void Interpreter::run(std::ostream& os, const std::vector<Token>& tokens) {
+  if(tokens.empty()) return;
+  if(tokens.size() >= 2u && tokens[0].type == TokenType::Variable && tokens[1].type == TokenType::Equality) { // decl
+    const auto id = tokens[0].immediate;
+    (*env)[id] = parse(tokens.begin() + 2, tokens.end()).first;
+  } else { // eval
+    auto tree = parse(tokens);
+    tree = eval(tree, env);
+    os << string_of_tree(tree, true, env);
+  }
+}
 void Interpreter::run(const std::vector<Token>& tokens) {
-    if(tokens.empty()) return;
-    if(tokens.size() >= 2u && tokens[0].type == TokenType::Variable && tokens[1].type == TokenType::Equality) { // decl
-        const auto id = tokens[0].immediate;
-        (*env)[id] = parse(tokens.begin() + 2, tokens.end()).first;
-    } else { // eval
-        auto tree = parse(tokens);
-        tree = eval(tree, env);
-        dump(tree, true, env);
-    }
+  run(std::cout, tokens);
 }
