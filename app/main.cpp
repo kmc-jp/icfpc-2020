@@ -6,8 +6,6 @@
 #include "../interact/demodulator.hpp"
 #include "../interact/modulator.hpp"
 
-// TODO:
-
 const int GAME_FINISHED = 2;
 
 struct GameResponse{
@@ -19,11 +17,21 @@ struct GameResponse{
 };
 
 // 10進数playerKey -> [2, playerKey, nil]
-extern std::string makeJoinRequest(std::string playerKey);
+std::string makeJoinRequest(std::string playerKey){
+	return "[2," + playerKey + ",Nil]";
+}
+
 // [3, playerKey, [x0, x1, x2, x3]]
-extern std::string makeStartRequest(std::string playerKey, GameResponse gameResponse);
+// We noticed, that START doesn’t finish successfully when x3 is 0 or xi’s are too large.
+std::string makeStartRequest(std::string playerKey, GameResponse gameResponse){
+	return "[3," + playerKey + ",[1,1,1,1]]";
+}
+
 // [4, playerKey, [commands]]
-extern std::string makeCommandsRequest(std::string playerKey, GameResponse gameResponse);
+std::string makeCommandsRequest(std::string playerKey, GameResponse gameResponse){
+	return "[4," + playerKey + ",Nil]";
+}
+
 // token 列 -> GameResponse
 extern GameResponse getGameResponse(std::vector<Token> tokens);
 
@@ -60,6 +68,7 @@ int main(int argc, char* argv[])
 
     // make valid JOIN request using the provided playerKey
 	auto joinRequest = makeJoinRequest(playerKey);
+	std::cout << "joinRequest: " << joinRequest << std::endl;
 	// [2, playerKey, nil] -> 11...
 	joinRequest = modulate(joinRequest);
     // send it to aliens and get the GameResponse
@@ -79,6 +88,7 @@ int main(int argc, char* argv[])
 
     // make valid START request using the provided playerKey and gameResponse returned from JOIN
 	auto startRequest = makeStartRequest(playerKey, gameResponse);
+	std::cout << "startRequest: " << startRequest << std::endl;
 	// [3, playerKey, [x0, x1, x2, x3]] -> 11...
 	startRequest = modulate(startRequest);
 	// send it to aliens and get the updated GameResponse
@@ -99,6 +109,7 @@ int main(int argc, char* argv[])
 	while(true){
         // make valid COMMANDS request using the provided playerKey and gameResponse returned from START or previous COMMANDS
         auto commandsRequest = makeCommandsRequest(playerKey, gameResponse);
+		std::cout << "commandRequest: " << commandsRequest << std::endl;
 		// [4, playerKey, nil] -> ..
 		commandsRequest = modulate(commandsRequest);
 
