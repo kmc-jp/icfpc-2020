@@ -8,41 +8,71 @@
 #include <unordered_map>
 #include "token.hpp"
 
+struct Apply;
+using ApplyPtr = std::shared_ptr<Apply>;
 
 struct Apply {
-  virtual bool is_apply() const { return false; }
-  virtual bool is_partial() const { return false; }
-  virtual bool is_cons_pair() const { return false; }
-  virtual bool is_object() const { return false; }
-};
+  Apply() : evaluated() {}
 
-using ApplyPtr = std::shared_ptr<Apply>;
+  bool is_apply() const {
+    if(evaluated) { return evaluated->is_apply(); }
+    return is_apply_impl();
+  }
+  bool is_partial() const {
+    if(evaluated) return evaluated->is_partial();
+    return is_partial_impl();
+  }
+  bool is_cons_pair() const {
+    if(evaluated) return evaluated->is_cons_pair();
+    return is_cons_pair_impl();
+  }
+  bool is_object() const {
+    if(evaluated) return evaluated->is_object();
+    return is_object_impl();
+  }
+
+  ApplyPtr evaluated;
+
+protected:
+  virtual bool is_apply_impl() const { return false; }
+  virtual bool is_partial_impl() const { return false; }
+  virtual bool is_cons_pair_impl() const { return false; }
+  virtual bool is_object_impl() const { return false; }
+};
 
 struct Object : Apply {
   Token ins;
   explicit Object(const Token& ins);
-  bool is_object() const override { return true; }
+
+protected:
+  bool is_object_impl() const override { return true; }
 };
 
 struct ApplyPair : Apply {
   ApplyPtr lhs, rhs;
   ApplyPair(const ApplyPtr& lhs,
       const ApplyPtr& rhs);
-  bool is_apply() const override { return true; }
+
+protected:
+    bool is_apply_impl() const override { return true; }
 };
 
 struct Partial : Apply {
   std::function<ApplyPtr(const ApplyPtr&)> func;
   std::string func_name;
   Partial(std::function<ApplyPtr(const ApplyPtr&)> func, const std::string& func_name);
-  bool is_partial() const override { return true; }
+
+protected:
+  bool is_partial_impl() const override { return true; }
 };
 
 struct ConsPair : Apply {
   ApplyPtr car, cdr;
   ConsPair(const ApplyPtr& car,
       const ApplyPtr& cdr);
-  bool is_cons_pair() const override { return true; }
+
+protected:
+  bool is_cons_pair_impl() const override { return true; }
 };
 
 using Environment = std::unordered_map<uint64_t, ApplyPtr>;
