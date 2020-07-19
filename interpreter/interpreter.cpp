@@ -283,12 +283,16 @@ ApplyPtr eval(const ApplyPtr& ap, std::shared_ptr<Environment> const& env) {
           }
         case TokenType::Car:
           {
-            auto cons_pair = std::dynamic_pointer_cast<ConsPair>(eval(ap_ap->rhs, env));
+            const auto val = eval(ap_ap->rhs, env);
+            if(!val->is_cons_pair()) throw std::runtime_error("BAD apply: expect cons pair");
+            auto cons_pair = std::dynamic_pointer_cast<ConsPair>(val);
             return ap->evaluated = eval(cons_pair->car, env);
           }
         case TokenType::Cdr:
           {
-            auto cons_pair = std::dynamic_pointer_cast<ConsPair>(eval(ap_ap->rhs, env));
+            const auto val = eval(ap_ap->rhs, env);
+            if(!val->is_cons_pair()) throw std::runtime_error("BAD apply: expect cons pair");
+            auto cons_pair = std::dynamic_pointer_cast<ConsPair>(val);
             return ap->evaluated = eval(cons_pair->cdr, env);
           }
         case TokenType::IsNil: // ???
