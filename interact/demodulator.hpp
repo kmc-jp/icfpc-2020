@@ -11,7 +11,7 @@ enum class AlienDataType{
 
 struct AlienData{
   AlienDataType type;
-  int num;
+  uint64_t num;
   std::vector<struct AlienData> vec;
 };
 
