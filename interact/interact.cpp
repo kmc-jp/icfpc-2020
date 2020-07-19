@@ -64,20 +64,36 @@ int main() {
     interp.run(ss, prog);
     return ss.str();
   };
-  int var_id = 2000;
+  int state_id = 2000, res_id = 1000000; // latest stateful galaxy and result
   bool flag;
   std::string data;
-  auto eval_and_update = [&interp, &run_and_get_result_string, &var_id, &flag, &data]() {
-    auto s = run_and_get_result_string(string_of_varid(var_id));
-    interp.run(std::cout, string_of_varid(var_id));
-    var_id++;
-    flag = s[1] == '1';
-    data = run_and_get_result_string("ap car ap cdr ap cdr " + string_of_varid(var_id - 1));
-    interp.run(string_of_varid(var_id) + " = ap car ap cdr " + string_of_varid(var_id - 1));
-    var_id++;
+  auto update_state = [&] (std::string const& modulated_list) {
+    const auto list_term = demodulate(modulated_list);
+    ++state_id;
+    std::vector<Token> t = {{TokenType::Variable, state_id}, {TokenType::Equality, 0}};
+    t.insert(t.end(), list_term.begin(), list_term.end());
+    interp.run(t);
   };
-  interp.run(string_of_varid(var_id) + " = ap ap " + galaxy + " nil ap ap cons 0 0");
-  eval_and_update();
+  auto click = [&] (std::vector<Token> const& pos) {
+    ++res_id;
+    std::vector<Token> prog = {{TokenType::Variable, res_id}, {TokenType::Equality, 0},
+                               app, app, {TokenType::Variable, 1338}, {TokenType::Variable, state_id}};
+    prog.insert(prog.end(), pos.begin(), pos.end());
+    interp.run(std::cout, prog);
+    const auto s = run_and_get_result_string(string_of_varid(res_id));
+    std::cout << s << std::endl;
+    flag = s[1] == '1';
+    data = run_and_get_result_string("ap car ap cdr ap cdr " + string_of_varid(res_id));
+    interp.run(string_of_varid(++state_id) + " = ap car ap cdr " + string_of_varid(res_id));
+  };
+  auto click_by_pos = [&] (int x, int y) {
+    std::vector<Token> pos = {app, app, cons, number(x), number(y)};
+    click(pos);
+  };
+  { // initialize
+    interp.run(string_of_varid(state_id) + " = nil");
+    click_by_pos(0, 0);
+  }
 
   auto read_eval = [&](std::istream &is) {
     while (true) {
@@ -93,23 +109,17 @@ int main() {
           return;
         }
         std::cout << "calculating.." << std::endl;
-        auto t2 = demodulate(res);
-        std::vector<Token> t1 = {{TokenType::Variable, var_id}, {TokenType::Equality, 0}, {TokenType::Apply, 0}, {TokenType::Apply, 0}, {TokenType::Variable, 1338}, {TokenType::Variable, var_id - 1}}; // :(var_id) = ap ap galaxy :(var_id -1)
-        t1.insert(t1.end(), t2.begin(), t2.end());
-        interp.run(t1);
-        eval_and_update();
+        const auto pos = demodulate(res);
+        click(pos);
       } else {
+        std::cout << "wating user input" << std::endl;
         string res;
         getline(is, res);
         if (is.fail()) {
           return;
         }
         if (res[0] == '[') {
-          auto t2 = demodulate(modulate(res));
-          std::vector<Token> t1 = {{TokenType::Variable, var_id}, {TokenType::Equality, 0}};
-          t1.insert(t1.end(), t2.begin(), t2.end()); // :(var_id) = token
-          interp.run(t1);
-          eval_and_update();
+          update_state(modulate(res));
           cout << "loaded" << endl;
         }else if (isdigit(res[0]) || res[0] == '-') {
           bool minusx = false, minusy = false;
@@ -129,8 +139,7 @@ int main() {
           if (minusx) x = -x;
           if (minusy) y = -y;
           std::cout << "calculating.." << std::endl;
-          interp.run(string_of_varid(var_id) + " = ap ap " + galaxy + " " + string_of_varid(var_id - 1) + " ap ap cons " + std::to_string(x) + " " + std::to_string(y));
-          eval_and_update();
+          click_by_pos(x, y);
         }
       }
     }

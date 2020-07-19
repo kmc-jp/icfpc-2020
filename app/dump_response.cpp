@@ -20,6 +20,8 @@ void dump_ship(Ship ship) {
   dump_point(ship.position);
   std::cout << "velocity: ";
   dump_point(ship.velocity);
+  std::cout << "x4, x5, x6, x7: " << ship.x4 << " " << ship.x5 << " " << ship.x6
+            << " " << ship.x7 << std::endl;
 }
 
 void dump_ship_and_command(ShipAndCommand sac) {

@@ -21,6 +21,24 @@ std::string makeStartRequest(std::string playerKey, GameResponse gameResponse){
 	return "[3," + playerKey + ",[1,1,1,1,Nil],Nil]";
 }
 
+// コマンドs を受け取って良い感じにする(TODO:やむなくと繋げる)
+std::string makeCommandsRequest(std::string playerKey, std::vector<CommandPtr> commands){
+	std::string req = "[4" + playerKey + ",";
+	if((int)commands.size() == 0){
+		req += "Nil";
+	}
+	else{
+		std::string coms = "[";
+		for(auto command:commands){
+			coms += command->to_list_string();
+			coms += ",";
+		}
+		coms += "Nil]";
+	}
+	req += ",Nil]";
+	return req;
+}
+
 // [4, playerKey, [commands]]
 std::string makeCommandsRequest(std::string playerKey, GameResponse gameResponse){
 	return "[4," + playerKey + ",Nil,Nil]";
