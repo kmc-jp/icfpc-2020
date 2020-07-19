@@ -34,12 +34,17 @@ string parse_list(const string &s, int &idx) {
   for (; idx < s.size(); idx++) {
     if (s[idx] == '[') {
       idx++;
-      ans += parse_list(s, idx);
+      string ret = parse_list(s, idx);
+      if(s[idx] == ']'){
+          idx--;
+      }else{
+          ans += "11";
+      }
+      ans += ret;
     } else if (s[idx] == ']') {
-      ans += "00";
+      idx++;
       break;
     } else if (isdigit(s[idx]) || s[idx] == '-') {
-      ans += "11";
       bool minus = (s[idx] == '-');
       if (minus) idx++;
       int num = 0;
@@ -52,9 +57,11 @@ string parse_list(const string &s, int &idx) {
         }
       }
       if (minus) num = -num;
+      if(s[idx + 1] != ']') ans += "11";
       ans += string_of_int(num);
     } else if (s[idx] == 'N'){
-        ans += "1100";
+        if(s[idx + 3] != ']') ans += "11";
+        ans += "00";
     }
   }
   return ans;
@@ -64,7 +71,7 @@ string modulate(const string s) {
   if (isdigit(s[0]) || s[0] == '-') {
     return string_of_int(stoi(s));
   } else {
-    int idx = 0;
+    int idx = 1;
     return parse_list(s, idx);
   }
 }
