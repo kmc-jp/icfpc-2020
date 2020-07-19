@@ -111,7 +111,6 @@ int main() {
           interp.run(t1);
           eval_and_update();
           cout << "loaded" << endl;
-          getline(is, res);
         }else if (isdigit(res[0]) || res[0] == '-') {
           bool minusx = false, minusy = false;
           int x = 0, y = 0;
