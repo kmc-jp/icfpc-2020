@@ -16,3 +16,5 @@ struct AlienData{
 };
 
 struct AlienData demodulateList(const std::string &s);
+
+std::string string_of_alien_data(const AlienData& data);
