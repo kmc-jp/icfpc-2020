@@ -51,12 +51,14 @@ void plot(std::string data) {
 int main() {
   const std::string galaxy = string_of_varid(1338);
   Interpreter interp;
-  std::ifstream fin("prog.txt");
-  std::string prog;
-  while (std::getline(fin, prog)) {
-    interp.run(std::cout, prog);
+  {
+    std::ifstream fin("prog.txt");
+    std::string prog;
+    while (std::getline(fin, prog)) {
+      interp.run(std::cout, prog);
+    }
+    fin.close();
   }
-
   auto run_and_get_result_string = [&interp](const std::string &prog) {
     std::stringstream ss;
     interp.run(ss, prog);
@@ -74,35 +76,44 @@ int main() {
     interp.run(string_of_varid(var_id) + " = ap car ap cdr " + string_of_varid(var_id - 1));
     var_id++;
   };
-
   interp.run(string_of_varid(var_id) + " = ap ap " + galaxy + " nil ap ap cons 0 0");
   eval_and_update();
 
-  while (true) {
-    plot(data);
-    if (flag) {
-      auto new_data = modulate(data);
-      std::cout << "send this to aliens and input the response : " << new_data << std::endl;
-      std::string res;
-      std::cin >> res;
-      if (std::cin.fail()) {
-        std::cerr << "no input given. terminate" << std::endl;
-        return 0;
+  auto read_eval = [&](std::istream &is) {
+    while (true) {
+      plot(data);
+
+      if (flag) {
+        auto new_data = modulate(data);
+        std::cout << "send this to aliens and input the response : " << new_data << std::endl;
+
+        std::string res;
+        is >> res;
+        if (is.fail()) {
+          return;
+        }
+        std::cout << "calculating.." << std::endl;
+        auto t2 = demodulate(res);
+        std::vector<Token> t1 = {{TokenType::Variable, var_id}, {TokenType::Equality, 0}, {TokenType::Apply, 0}, {TokenType::Apply, 0}, {TokenType::Variable, 1338}, {TokenType::Variable, var_id - 1}}; // ap ap galaxy :(var_id -1)
+        t1.insert(t1.end(), t2.begin(), t2.end());
+        interp.run(t1);
+        eval_and_update();
+      } else {
+        int x, y;
+        is >> x >> y;
+        if (is.fail()) {
+          return;
+        }
+        std::cout << "calculating.." << std::endl;
+        interp.run(string_of_varid(var_id) + " = ap ap " + galaxy + " " + string_of_varid(var_id - 1) + " ap ap cons " + std::to_string(x) + " " + std::to_string(y));
+        eval_and_update();
       }
-      auto t2 = demodulate(res);
-      std::vector<Token> t1 = {{TokenType::Variable, var_id}, {TokenType::Equality, 0}, {TokenType::Apply, 0}, {TokenType::Apply, 0}, {TokenType::Variable, 1338}, {TokenType::Variable, var_id - 1}}; // ap ap galaxy :(var_id -1)
-      t1.insert(t1.end(), t2.begin(), t2.end());
-      interp.run(t1);
-      eval_and_update();
-    } else {
-      int x, y;
-      std::cin >> x >> y;
-      if (std::cin.fail()) {
-        std::cerr << "no input given. terminate" << std::endl;
-        return 0;
-      }
-      interp.run(string_of_varid(var_id) + " = ap ap " + galaxy + " " + string_of_varid(var_id - 1) + " ap ap cons " + std::to_string(x) + " " + std::to_string(y));
-      eval_and_update();
     }
+  };
+  {
+  std::ifstream fin("in.txt");
+  read_eval(fin);
+  std::cout << "file reading mode ended" << std::endl;
+  read_eval(std::cin);
   }
 }
