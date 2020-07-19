@@ -74,6 +74,6 @@ string modulate(const string s) {
         string t = s;
         for(auto &c : s) if(c!= ' ') t.push_back(c);
         int idx = 1;
-        return parse_list(s, idx);
+        return parse_list(t, idx);
     }
 }
