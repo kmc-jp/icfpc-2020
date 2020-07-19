@@ -72,7 +72,7 @@ string modulate(const string s) {
         return string_of_ll(stoi(s));
     } else {
         string t = s;
-//    for(auto &c : s) if(c!= ' ') t.push_back(c);
+        for(auto &c : s) if(c!= ' ') t.push_back(c);
         int idx = 1;
         return parse_list(s, idx);
     }
