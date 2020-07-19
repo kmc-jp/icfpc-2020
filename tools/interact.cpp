@@ -19,6 +19,7 @@ void plot(std::string data) {
       str.back().push_back(data[i]);
     }
   }
+  if(str.empty() || str.back().substr(0, 3) != "Nil") return;
   std::vector<std::vector<pair<int, int>>> ps(1);
   int minx = 0, maxx = 0, miny = 0, maxy = 0;
   for (int i = 0; i < str.size(); i++) {
@@ -26,6 +27,7 @@ void plot(std::string data) {
       ps.push_back(std::vector<pair<int, int>>());
       continue;
     }
+
     int x = std::stoi(str[i]);
     int y = std::stoi(str[++i]);
     ps.back().emplace_back(x, y);
