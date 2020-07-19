@@ -140,6 +140,8 @@ int64_t get_int(const ApplyPtr& ap) {
     }
     return ap_obj->ins.immediate;
   } else {
+      std::shared_ptr<Environment> hoge;
+      std::cout << "error: " << string_of_tree(ap, false, hoge) << std::endl;
     throw std::runtime_error("Failed to get_int: not an Object");
   }
 }
@@ -284,16 +286,22 @@ ApplyPtr eval(const ApplyPtr& ap, std::shared_ptr<Environment> const& env) {
         case TokenType::Car:
           {
             const auto val = eval(ap_ap->rhs, env);
-            if(!val->is_cons_pair()) throw std::runtime_error("BAD apply: expect cons pair");
-            auto cons_pair = std::dynamic_pointer_cast<ConsPair>(val);
-            return ap->evaluated = eval(cons_pair->car, env);
+            if(val->is_cons_pair()) {
+              auto cons_pair = std::dynamic_pointer_cast<ConsPair>(val);
+              return ap->evaluated = eval(cons_pair->car, env);
+            } else {
+              return ap->evaluated = eval(make_apply(val, make_apply({TokenType::True, 1})), env);
+            }
           }
         case TokenType::Cdr:
           {
             const auto val = eval(ap_ap->rhs, env);
-            if(!val->is_cons_pair()) throw std::runtime_error("BAD apply: expect cons pair");
-            auto cons_pair = std::dynamic_pointer_cast<ConsPair>(val);
-            return ap->evaluated = eval(cons_pair->cdr, env);
+            if(val->is_cons_pair()) {
+              auto cons_pair = std::dynamic_pointer_cast<ConsPair>(val);
+              return ap->evaluated = eval(cons_pair->cdr, env);
+            } else {
+              return ap->evaluated = eval(make_apply(val, make_apply({TokenType::False, 0})), env);
+            }
           }
         case TokenType::IsNil: // ???
           {
