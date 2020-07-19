@@ -1,4 +1,5 @@
 #include "demodulator.hpp"
+#include <cassert>
 
 std::pair<std::vector<Token>, int> demodulate(const std::string &num, int i) {
   if (num.substr(i, 2) == "00") {
@@ -39,6 +40,53 @@ std::pair<std::vector<Token>, int> demodulate(const std::string &num, int i) {
 
 std::vector<Token> demodulate(const std::string &s) {
   auto result = demodulate(s, 0);
+  return result.first;
+}
+
+
+std::pair<struct demodata, int> demodulateList(const std::string &num, int i) {
+  if (num.substr(i, 2) == "00") {
+  	struct demodata data;
+  	data.type = demodataEnum::demoList;
+    return {data, 2};
+  }
+  if (num.substr(i, 2) == "11") {
+    auto result1 = demodulateList(num, i + 2);
+    auto result2 = demodulateList(num, i + 2 + result1.second);
+    assert(result2.first.type == demodataEnum::demoList);
+    result2.first.vec.push_back(result1.first);
+    return {result2.first, result1.second + result2.second + 2};
+  }
+  int64_t result = 0;
+  if (num.substr(i, 2) == "01") {
+    result = 1;
+  } else {
+    result = -1;
+  }
+  int n = 0;
+  for (int pos = i + 2; pos < (int)num.size(); pos++) {
+    if (num[pos] == '0') {
+      n = pos - i - 2;
+      break;
+    }
+  }
+  int64_t val = 0;
+  for (int j = 0; j < 4 * n; j++) {
+    val *= 2;
+    if (num[i + 2 + n + 1 + j] == '1') {
+      val += 1;
+    }
+  }
+  result *= val;
+  struct demodata data;
+  data.type = demodataEnum::demoInt;
+  data.num = result;
+  
+  return {data, 2 + 4 * n + n + 1};
+}
+
+struct demodata demodulateList(const std::string &s) {
+  auto result = demodulateList(s, 0);
   return result.first;
 }
 
