@@ -12,6 +12,10 @@ enum class CommandType {
   Shoot
 };
 
+// Usage:
+// if(command_ptr->is_accelerate())        => get Accelerate by std::dynamic_pointer_cast<Accelerate>(command_ptr)
+// modulate(command_ptr->to_list_string()) => modulated sequence of its command
+
 struct Command {
   virtual ~Command() {}
 
@@ -26,10 +30,10 @@ struct Command {
 using CommandPtr = std::shared_ptr<Command>;
 
 struct Accelerate : public Command {
-  uint64_t ship_id;
+  int64_t ship_id;
   point vec;
 
-  Accelerate(uint64_t ship_id, point const& vec);
+  Accelerate(int64_t ship_id, point const& vec);
 
   CommandType command_type() const override { return CommandType::Accelerate; }
   bool is_accelerate() const override { return true; }
@@ -38,9 +42,9 @@ struct Accelerate : public Command {
 };
 
 struct Detonate : public Command {
-  uint64_t ship_id;
+  int64_t ship_id;
 
-  Detonate(uint64_t ship_id);
+  Detonate(int64_t ship_id);
 
   CommandType command_type() const override { return CommandType::Detonate; }
   bool is_detonate() const override { return true; }
@@ -49,10 +53,10 @@ struct Detonate : public Command {
 };
 
 struct Shoot : public Command {
-  uint64_t ship_id, x3; // todo: x3
+  int64_t ship_id, x3; // todo: x3
   point target;
 
-  Shoot(uint64_t ship_id, point const& target, uint64_t x3);
+  Shoot(int64_t ship_id, point const& target, int64_t x3);
 
   CommandType command_type() const override { return CommandType::Shoot; }
   bool is_shoot() const override { return true; }
@@ -61,9 +65,11 @@ struct Shoot : public Command {
 };
 
 
-CommandPtr make_accelerate(uint64_t ship_id, point const& vec);
-CommandPtr make_detonate(uint64_t ship_id);
-CommandPtr make_shoot(uint64_t ship_id, point const& target, uint64_t x3); // todo: x3
+CommandPtr make_accelerate(int64_t ship_id, point const& vec);
+CommandPtr make_detonate(int64_t ship_id);
+CommandPtr make_shoot(int64_t ship_id, point const& target, int64_t x3); // todo: x3
 
+
+std::string make_command_query(std::string const& player_key, std::vector<CommandPtr> const& commands);
 
 #endif

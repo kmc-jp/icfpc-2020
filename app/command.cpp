@@ -1,14 +1,14 @@
 #include "command.hpp"
 
-Accelerate::Accelerate(uint64_t ship_id_, point const& vec_)
+Accelerate::Accelerate(int64_t ship_id_, point const& vec_)
   : ship_id(ship_id_), vec(vec_)
 {}
 
-Detonate::Detonate(uint64_t ship_id_)
+Detonate::Detonate(int64_t ship_id_)
   : ship_id(ship_id_)
 {}
 
-Shoot::Shoot(uint64_t ship_id_, point const& target_, uint64_t x3_)
+Shoot::Shoot(int64_t ship_id_, point const& target_, int64_t x3_)
   : ship_id(ship_id_), x3(x3_), target(target_)
 {}
 
@@ -40,14 +40,34 @@ std::string Shoot::to_list_string() const {
 }
 
 
-CommandPtr make_accelerate(uint64_t ship_id, point const& vec) {
+CommandPtr make_accelerate(int64_t ship_id, point const& vec) {
   return std::make_shared<Accelerate>(ship_id, vec);
 }
 
-CommandPtr make_detonate(uint64_t ship_id) {
+CommandPtr make_detonate(int64_t ship_id) {
   return std::make_shared<Detonate>(ship_id);
 }
 
-CommandPtr make_shoot(uint64_t ship_id, point const& target, uint64_t x3) {
+CommandPtr make_shoot(int64_t ship_id, point const& target, int64_t x3) {
   return std::make_shared<Shoot>(ship_id, target, x3);
+}
+
+
+std::string make_command_query(std::string const& player_key, std::vector<CommandPtr> const& commands) {
+  std::string s;
+  s += "[4";
+  s += ", " + player_key;
+  s += ", ";
+  if(commands.empty()) {
+    s += "Nil";
+  } else {
+    s += "[";
+    for(int i = 0; i < (int)commands.size(); ++i) {
+      if(i == 0) s += ", ";
+      s += commands[i]->to_list_string();
+    }
+    s += ", Nil]";
+  }
+  s += ", Nil]";
+  return s;
 }

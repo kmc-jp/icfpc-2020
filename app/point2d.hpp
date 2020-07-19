@@ -4,7 +4,7 @@
 #include <string>
 
 struct point {
-  uint64_t x, y;
+  int64_t x, y;
 
   // todo: Nil ?
     std::string to_string() const {
