@@ -5,6 +5,7 @@
 #include "../interpreter/token.hpp"
 #include "../interact/demodulator.hpp"
 #include "../interact/modulator.hpp"
+#include "dump_response.hpp"
 #include "response.hpp"
 
 const int GAME_FINISHED = 2;
@@ -33,19 +34,13 @@ void printv(const std::vector<T> &v) {
   }
 }
 
-void dump_game(GameResponse &gameResponse){
-	std::cout << "status: " << gameResponse.status << std::endl;
-	std::cout << "gameStage: " << gameResponse.gameStage << std::endl;
-	std::cout << "staticGameInfo: "; printv(gameResponse.staticGameInfo);
-}
-
 int main(int argc, char* argv[])
 {
 	//std::cout << makeStartRequest("114514", GameResponse()) << std::endl;
 	//std::cout << makeJoinRequest("114514") << std::endl;
 	//std::cout << makeCommandsRequest("114514", GameResponse()) << std::endl;
 	
-	const std::string serverUrl(argv[1]);
+	std::string serverUrl(argv[1]);
 	const std::string playerKey(argv[2]);
 
 	std::cout << "ServerUrl: " << serverUrl << "; PlayerKey: " << playerKey << std::endl;
@@ -59,6 +54,7 @@ int main(int argc, char* argv[])
 	const std::string serverName = urlMatches[1];
 	const int serverPort = std::stoi(urlMatches[2]);
 	httplib::Client client(serverName, serverPort);
+	serverUrl += "/aliens/send";
 
     // make valid JOIN request using the provided playerKey
 	auto joinRequest = makeJoinRequest(playerKey);
@@ -78,7 +74,7 @@ int main(int argc, char* argv[])
 	}
 	std::cout << "joinRequest Response: " << serverResponse->body << std::endl;
 	auto gameResponse = getGameResponse(demodulateList(serverResponse->body));
-	dump_game(gameResponse);
+	dump_game_response(gameResponse);
 
     // make valid START request using the provided playerKey and gameResponse returned from JOIN
 	auto startRequest = makeStartRequest(playerKey, gameResponse);
@@ -98,7 +94,7 @@ int main(int argc, char* argv[])
 	}
 	std::cout << "startRequest Response: " << serverResponse->body << std::endl;
 	gameResponse = getGameResponse(demodulateList(serverResponse->body));
-	dump_game(gameResponse);
+	dump_game_response(gameResponse);
 
 	while(true){
         // make valid COMMANDS request using the provided playerKey and gameResponse returned from START or previous COMMANDS
@@ -120,7 +116,7 @@ int main(int argc, char* argv[])
 		}
 		std::cout << "commandsRequestResponse: " << serverResponse->body << std::endl;
 		gameResponse = getGameResponse(demodulateList(serverResponse->body));
-		dump_game(gameResponse);
+		dump_game_response(gameResponse);
 		if(gameResponse.gameStage == GAME_FINISHED){
 			std::cout << "game finished" << std::endl;
 			break;
