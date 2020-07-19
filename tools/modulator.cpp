@@ -33,9 +33,8 @@ string parse_list(const string &s, int &idx) {
   string tmp;
   for (; idx < s.size(); idx++) {
     if (s[idx] == '[') {
-      ans += "11";
       idx++;
-      parse_list(s, idx);
+      ans += parse_list(s, idx);
     } else if (s[idx] == ']') {
       ans += "00";
       break;
@@ -48,12 +47,14 @@ string parse_list(const string &s, int &idx) {
         if (isdigit(s[idx])) {
           num = num * 10 + (s[idx] - '0');
         } else {
-          idx--;
+            idx--;
           break;
         }
       }
       if (minus) num = -num;
       ans += string_of_int(num);
+    } else if (s[idx] == 'N'){
+        ans += "1100";
     }
   }
   return ans;
@@ -63,7 +64,7 @@ string modulate(const string s) {
   if (isdigit(s[0]) || s[0] == '-') {
     return string_of_int(stoi(s));
   } else {
-    int idx = 1;
+    int idx = 0;
     return parse_list(s, idx);
   }
 }

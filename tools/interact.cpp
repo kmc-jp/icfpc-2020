@@ -94,19 +94,45 @@ int main() {
         }
         std::cout << "calculating.." << std::endl;
         auto t2 = demodulate(res);
-        std::vector<Token> t1 = {{TokenType::Variable, var_id}, {TokenType::Equality, 0}, {TokenType::Apply, 0}, {TokenType::Apply, 0}, {TokenType::Variable, 1338}, {TokenType::Variable, var_id - 1}}; // ap ap galaxy :(var_id -1)
+        std::vector<Token> t1 = {{TokenType::Variable, var_id}, {TokenType::Equality, 0}, {TokenType::Apply, 0}, {TokenType::Apply, 0}, {TokenType::Variable, 1338}, {TokenType::Variable, var_id - 1}}; // :(var_id) = ap ap galaxy :(var_id -1)
         t1.insert(t1.end(), t2.begin(), t2.end());
         interp.run(t1);
         eval_and_update();
       } else {
-        int x, y;
-        is >> x >> y;
+        string res;
+        getline(is, res);
         if (is.fail()) {
           return;
         }
-        std::cout << "calculating.." << std::endl;
-        interp.run(string_of_varid(var_id) + " = ap ap " + galaxy + " " + string_of_varid(var_id - 1) + " ap ap cons " + std::to_string(x) + " " + std::to_string(y));
-        eval_and_update();
+        if (res[0] == '[') {
+          auto t2 = demodulate(modulate(res));
+          std::vector<Token> t1 = {{TokenType::Variable, var_id}, {TokenType::Equality, 0}};
+          t1.insert(t1.end(), t2.begin(), t2.end()); // :(var_id) = token
+          interp.run(t1);
+          eval_and_update();
+          cout << "loaded" << endl;
+          getline(is, res);
+        }else if (isdigit(res[0]) || res[0] == '-') {
+          bool minusx = false, minusy = false;
+          int x = 0, y = 0;
+          int idx = 0;
+          if (res[idx] == '-') minusx = true, idx++;
+          for (; idx < res.size(); idx++) {
+            if(!isdigit(res[idx])) break;
+            x = x * 10 + (res[idx] - '0');
+          }
+          for (;!isdigit(res[idx]);idx++);
+          if(idx > 0) if (res[idx - 1] == '-') minusy = true;
+          for (; idx < res.size(); idx++) {
+            if(!isdigit(res[idx])) break;
+            y = y * 10 + (res[idx] - '0');
+          }
+          if (minusx) x = -x;
+          if (minusy) y = -y;
+          std::cout << "calculating.." << std::endl;
+          interp.run(string_of_varid(var_id) + " = ap ap " + galaxy + " " + string_of_varid(var_id - 1) + " ap ap cons " + std::to_string(x) + " " + std::to_string(y));
+          eval_and_update();
+        }
       }
     }
   };
