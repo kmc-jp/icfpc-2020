@@ -49,19 +49,19 @@ using Environment = std::unordered_map<uint64_t, ApplyPtr>;
 
 //FuncApplyPtr make_apply(const Token& ins, const std::vector<FuncApplyPtr>& operands);
 ApplyPtr parse(const std::vector<Token>& tokens);
-void dump(std::ostream& os, const ApplyPtr& ap, bool enable_eval, const std::shared_ptr<Environment>& env);
 int64_t get_int(const ApplyPtr& ap);
 
 //bool is_finished(const ApplyPtr& ap);
 ApplyPtr eval(const ApplyPtr& ap, const std::shared_ptr<Environment>& env);
 
 
-
 class Interpreter {
 public:
   Interpreter();
 
+  void run(std::ostream& os, const std::string& prog);
   void run(const std::string& prog);
+  void run(std::ostream& os, const std::vector<Token>& tokens);
   void run(const std::vector<Token>& tokens);
 
 private:
