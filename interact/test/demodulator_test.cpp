@@ -1,0 +1,14 @@
+#include "../demodulator.hpp"
+#include <cassert>
+#include <iostream>
+
+void create_query_test() {
+  const std::string s = "11011000011111110101101111111111111111100011110011110011001011010111101101101010101110011000101010111111001111011000011101111111111111111100101110000101101101101100011110001110001110001011110111000001001000000";
+  const auto alien_data = demodulateList(s);
+  const auto list = string_of_alien_data(alien_data);
+  assert(list == "[1, [[0, 4391904069711137471], [1, 6642165396164439561]]]");
+}
+
+int main() {
+  create_query_test();
+}

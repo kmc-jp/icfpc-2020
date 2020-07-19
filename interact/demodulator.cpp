@@ -97,50 +97,17 @@ struct AlienData demodulateList(const std::string &s) {
   return result.first;
 }
 
-/*
-int main() {
-  std::string s;
-  while (std::cin >> s) {
-    auto tokens = demodulate(s);
-    for (auto token : tokens) {
-      switch (token.type) {
-        case TokenType::Sum:
-          std::cerr << "+";
-          break;
-        case TokenType::Product:
-          std::cerr << "*";
-          break;
-        case TokenType::Eq:
-          std::cerr << "==";
-          break;
-        case TokenType::S:
-          std::cerr << "S";
-          break;
-        case TokenType::B:
-          std::cerr << "B";
-          break;
-        case TokenType::C:
-          std::cerr << "C";
-          break;
-        case TokenType::Pwr2:
-          std::cerr << "Pwr2";
-          break;
-        case TokenType::I:
-          std::cerr << "I";
-          break;
-        case TokenType::Nil:
-          std::cerr << "Nil";
-          break;
-        case TokenType::Cons:
-          std::cerr << "Cons";
-          break;
-        case TokenType::Number:
-          std::cerr << "N[" << token.immediate << "]";
-          break;
-        default:
-          std::cerr << static_cast<int>(token.type);
-      }
+std::string string_of_alien_data(const AlienData& data) {
+  std::string res;
+  if(data.type == AlienDataType::Int) {
+    res = std::to_string(data.num);
+  } else if(data.type == AlienDataType::List) {
+    res = "[";
+    for(int i = 0; i < (int)data.vec.size(); ++i) {
+      if(i != 0) res += ", ";
+      res += string_of_alien_data(data.vec[i]);
     }
+    res += "]";
   }
+  return res;
 }
-*/
