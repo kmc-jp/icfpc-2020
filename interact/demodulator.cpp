@@ -1,5 +1,4 @@
 #include "demodulator.hpp"
-#include <cassert>
 
 std::pair<std::vector<Token>, int> demodulate(const std::string &num, int i) {
   if (num.substr(i, 2) == "00") {
@@ -53,9 +52,17 @@ std::pair<struct AlianData, int> demodulateList(const std::string &num, int i) {
   if (num.substr(i, 2) == "11") {
     auto result1 = demodulateList(num, i + 2);
     auto result2 = demodulateList(num, i + 2 + result1.second);
-    assert(result2.first.type == AlianDataType::List);
-    result2.first.vec.push_back(result1.first);
-    return {result2.first, result1.second + result2.second + 2};
+    if(result2.first.type == AlianDataType::List){
+      result2.first.vec.insert(result2.first.vec.begin(),result1.first);
+      return {result2.first, result1.second + result2.second + 2};
+    }
+    else{
+      struct AlianData data;
+      data.type = AlianDataType::List;
+      data.vec.push_back(result1.first);
+      data.vec.push_back(result2.first);
+      return {data, result1.second + result2.second + 2};
+    }
   }
   int64_t result = 0;
   if (num.substr(i, 2) == "01") {
