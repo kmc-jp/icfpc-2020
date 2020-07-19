@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
 	//std::cout << makeJoinRequest("114514") << std::endl;
 	//std::cout << makeCommandsRequest("114514", GameResponse()) << std::endl;
 	
-	const std::string serverUrl(argv[1]);
+	std::string serverUrl(argv[1]);
 	const std::string playerKey(argv[2]);
 
 	std::cout << "ServerUrl: " << serverUrl << "; PlayerKey: " << playerKey << std::endl;
@@ -59,6 +59,7 @@ int main(int argc, char* argv[])
 	const std::string serverName = urlMatches[1];
 	const int serverPort = std::stoi(urlMatches[2]);
 	httplib::Client client(serverName, serverPort);
+	serverUrl += "/aliens/send";
 
     // make valid JOIN request using the provided playerKey
 	auto joinRequest = makeJoinRequest(playerKey);
