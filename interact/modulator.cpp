@@ -15,7 +15,7 @@ string string_of_ll(long long x) {
     while (tmp <= x) {
         s.push_back('1');
         lg += 4;
-        if(tmp <= x / 16) break;
+        if(tmp > x / 16) break;
         tmp <<= 4;
     }
     s.push_back('0');
