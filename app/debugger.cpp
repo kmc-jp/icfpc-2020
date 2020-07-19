@@ -34,13 +34,13 @@ void debug_modulate(std::string s) {
         std::cerr << "I";
         break;
       case TokenType::Nil:
-        std::cerr << "Nil";
+        std::cerr << "Nil ";
         break;
       case TokenType::Cons:
-        std::cerr << "Cons";
+        std::cerr << "Cons ";
         break;
       case TokenType::Number:
-        std::cerr << "N[" << token.immediate << "]";
+        std::cerr << "N[" << token.immediate << "] ";
         break;
       case TokenType::Apply:
         std::cerr << "ap ";
@@ -52,7 +52,8 @@ void debug_modulate(std::string s) {
 }
 
 int main() {
-  std::string input;
-  while (cin >> input) {
+  std::string s;
+  while (cin >> s) {
+      debug_modulate(s);
   }
 }
