@@ -44,16 +44,16 @@ std::vector<Token> demodulate(const std::string &s) {
 }
 
 
-std::pair<struct demodata, int> demodulateList(const std::string &num, int i) {
+std::pair<struct AlianData, int> demodulateList(const std::string &num, int i) {
   if (num.substr(i, 2) == "00") {
-  	struct demodata data;
-  	data.type = demodataEnum::demoList;
+    struct AlianData data;
+    data.type = AlianDataType::List;
     return {data, 2};
   }
   if (num.substr(i, 2) == "11") {
     auto result1 = demodulateList(num, i + 2);
     auto result2 = demodulateList(num, i + 2 + result1.second);
-    assert(result2.first.type == demodataEnum::demoList);
+    assert(result2.first.type == AlianDataType::List);
     result2.first.vec.push_back(result1.first);
     return {result2.first, result1.second + result2.second + 2};
   }
@@ -78,14 +78,14 @@ std::pair<struct demodata, int> demodulateList(const std::string &num, int i) {
     }
   }
   result *= val;
-  struct demodata data;
-  data.type = demodataEnum::demoInt;
+  struct AlianData data;
+  data.type = AlianDataType::Int;
   data.num = result;
   
   return {data, 2 + 4 * n + n + 1};
 }
 
-struct demodata demodulateList(const std::string &s) {
+struct AlianData demodulateList(const std::string &s) {
   auto result = demodulateList(s, 0);
   return result.first;
 }

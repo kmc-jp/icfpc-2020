@@ -3,16 +3,16 @@
 
 std::vector<Token> demodulate(const std::string &s);
 
-enum class demodataEnum{
-  demoInt,
-  demoList,
+enum class AlianDataType{
+  Int,
+  List,
 };
 
 
-struct demodata{
-	demodataEnum type;
-	int num;
-	std::vector<struct demodata> vec;
+struct AlianData{
+  AlianDataType type;
+  int num;
+  std::vector<struct AlianData> vec;
 };
 
-struct demodata demodulateList(const std::string &s);
+struct AlianData demodulateList(const std::string &s);
