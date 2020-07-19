@@ -12,7 +12,7 @@ std::string string_of_varid(int var_id) {
 
 void plot(std::string data) {
   std::vector<std::string> str(1);
-  for (int i = 0; i < data.size(); i++) {
+  for (int i = 0; i < (int)data.size(); i++) {
     if (data[i] == ' ') {
       str.push_back("");
     } else if (data[i] != '[' && data[i] != ']' && data[i] != ',') {
@@ -21,7 +21,7 @@ void plot(std::string data) {
   }
   std::vector<std::vector<pair<int, int>>> ps(1);
   int minx = 0, maxx = 0, miny = 0, maxy = 0;
-  for (int i = 0; i < str.size(); i++) {
+  for (int i = 0; i < (int)str.size(); i++) {
     if (str[i].substr(0, 3) == "Nil" || str[i + 1].substr(0, 3) == "Nil") {
       ps.push_back(std::vector<pair<int, int>>());
       continue;
@@ -117,13 +117,13 @@ int main() {
           int x = 0, y = 0;
           int idx = 0;
           if (res[idx] == '-') minusx = true, idx++;
-          for (; idx < res.size(); idx++) {
+          for (; idx < (int)res.size(); idx++) {
             if(!isdigit(res[idx])) break;
             x = x * 10 + (res[idx] - '0');
           }
           for (;!isdigit(res[idx]);idx++);
           if(idx > 0) if (res[idx - 1] == '-') minusy = true;
-          for (; idx < res.size(); idx++) {
+          for (; idx < (int)res.size(); idx++) {
             if(!isdigit(res[idx])) break;
             y = y * 10 + (res[idx] - '0');
           }
