@@ -1,0 +1,28 @@
+<html>
+	<head>
+		<meta charset="ISO-8859-1">
+		<style>
+			.grid-container {
+				display: grid;
+				grid-template-columns: %s;
+				grid-template-rows: %s;
+			}
+			%s
+		</style>
+		<script>
+			function submitpos(y,x){
+				document.forms[0].children[0].value = y + "," + x;
+				document.forms[0].submit();
+			}
+		</script>
+	</head>
+	<body>
+		<div class="grid-container">
+			%s
+		</div>
+		<form action="" method="post" type="hidden">
+		<input type="hidden" name="coordinate" value="None" />
+    <input type="submit" value="reload"/>
+		</form>
+	</body>
+</html>
