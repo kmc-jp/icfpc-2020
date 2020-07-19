@@ -42,7 +42,6 @@ std::vector<Token> demodulate(const std::string &s) {
   return result.first;
 }
 
-
 std::pair<struct AlienData, int> demodulateList(const std::string &num, int i) {
   if (num.substr(i, 2) == "00") {
     struct AlienData data;
