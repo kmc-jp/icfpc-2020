@@ -69,7 +69,7 @@ string parse_list(const string &s, int &idx) {
 
 string modulate(const string s) {
     if (isdigit(s[0]) || s[0] == '-') {
-        return string_of_ll(stoi(s));
+        return string_of_ll(stoll(s));
     } else {
         string t;
         for(auto &c : s) if(c != ' ') t.push_back(c);
