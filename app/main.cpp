@@ -7,6 +7,7 @@
 #include "../interact/modulator.hpp"
 #include "dump_response.hpp"
 #include "response.hpp"
+#include "player.hpp"
 
 const int GAME_FINISHED = 2;
 
