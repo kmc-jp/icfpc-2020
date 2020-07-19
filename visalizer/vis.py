@@ -3,6 +3,7 @@ import socketserver
 import urllib.parse
 
 import subprocess
+from urllib import request, parse
 
 def getunt(f,s):
 	res = b''
@@ -13,10 +14,12 @@ def getunt(f,s):
 	return res
 
 proc = subprocess.Popen(["../interact/interact"], stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+getunt(proc.stdout,b']\n\n')
+getunt(proc.stdout,b'\n')
 getunt(proc.stdout,b'\n')
 getunt(proc.stdout,b'\n')
 
-PORT = 8000
+PORT = 8001
 
 center = None
 
@@ -78,9 +81,19 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 			cord = list(map(int,cord.split(',')))
 			proc.stdin.write(b'%d %d\n' % (cord[1]-center[1],cord[0]-center[0]))
 			proc.stdin.flush()
-			getunt(proc.stdout,b'\n')
-			getunt(proc.stdout,b'\n')
-			print('updated subprocess')
+			while True:
+				getunt(proc.stdout,b']\n\n')
+				print('updated subprocess')
+				s = getunt(proc.stdout,b'\n')
+				hs = b'send this to aliens '
+				if s[:len(hs)] == hs:
+					s = s.split(b':')[1][1:-1]
+					url = "https://icfpc2020-api.testkontur.ru/aliens/send?apiKey=7ffc9148909e45af9c34d5610604bc2c"
+					res = request.urlopen(request.Request(url, data=s)).readline()
+					proc.stdin.write(res + b'\n')
+					proc.stdin.flush()
+				else:
+					break
 		
 		self.send_response(200)
 		self.send_header('Content-type', 'text/html')
