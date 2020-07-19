@@ -11,18 +11,18 @@ const int GAME_FINISHED = 2;
 
 // 10進数playerKey -> [2, playerKey, nil]
 std::string makeJoinRequest(std::string playerKey){
-	return "[2," + playerKey + ",Nil]";
+	return "[2," + playerKey + ",Nil,Nil]";
 }
 
 // [3, playerKey, [x0, x1, x2, x3]]
 // We noticed, that START doesn’t finish successfully when x3 is 0 or xi’s are too large.
 std::string makeStartRequest(std::string playerKey, GameResponse gameResponse){
-	return "[3," + playerKey + ",[1,1,1,1]]";
+	return "[3," + playerKey + ",[1,1,1,1],Nil]";
 }
 
 // [4, playerKey, [commands]]
 std::string makeCommandsRequest(std::string playerKey, GameResponse gameResponse){
-	return "[4," + playerKey + ",Nil]";
+	return "[4," + playerKey + ",Nil,Nil]";
 }
 
 // token 列 -> GameResponse
@@ -44,6 +44,10 @@ void dump_game(GameResponse &gameResponse){
 
 int main(int argc, char* argv[])
 {
+	//std::cout << makeStartRequest("114514", GameResponse()) << std::endl;
+	//std::cout << makeJoinRequest("114514") << std::endl;
+	//std::cout << makeCommandsRequest("114514", GameResponse()) << std::endl;
+	
 	const std::string serverUrl(argv[1]);
 	const std::string playerKey(argv[2]);
 
