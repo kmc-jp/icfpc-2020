@@ -5,6 +5,7 @@
 #include "../interpreter/token.hpp"
 #include "../interact/demodulator.hpp"
 #include "../interact/modulator.hpp"
+#include "dump_response.hpp"
 #include "response.hpp"
 
 const int GAME_FINISHED = 2;
@@ -31,12 +32,6 @@ void printv(const std::vector<T> &v) {
   for (int i = 0; i < sz; i++) {
     cout << v[i] << " \n"[i == sz - 1];
   }
-}
-
-void dump_game(GameResponse &gameResponse){
-	std::cout << "status: " << gameResponse.status << std::endl;
-	std::cout << "gameStage: " << gameResponse.gameStage << std::endl;
-	std::cout << "staticGameInfo: "; printv(gameResponse.staticGameInfo);
 }
 
 int main(int argc, char* argv[])
@@ -79,7 +74,7 @@ int main(int argc, char* argv[])
 	}
 	std::cout << "joinRequest Response: " << serverResponse->body << std::endl;
 	auto gameResponse = getGameResponse(demodulateList(serverResponse->body));
-	dump_game(gameResponse);
+	dump_game_response(gameResponse);
 
     // make valid START request using the provided playerKey and gameResponse returned from JOIN
 	auto startRequest = makeStartRequest(playerKey, gameResponse);
@@ -99,7 +94,7 @@ int main(int argc, char* argv[])
 	}
 	std::cout << "startRequest Response: " << serverResponse->body << std::endl;
 	gameResponse = getGameResponse(demodulateList(serverResponse->body));
-	dump_game(gameResponse);
+	dump_game_response(gameResponse);
 
 	while(true){
         // make valid COMMANDS request using the provided playerKey and gameResponse returned from START or previous COMMANDS
@@ -121,7 +116,7 @@ int main(int argc, char* argv[])
 		}
 		std::cout << "commandsRequestResponse: " << serverResponse->body << std::endl;
 		gameResponse = getGameResponse(demodulateList(serverResponse->body));
-		dump_game(gameResponse);
+		dump_game_response(gameResponse);
 		if(gameResponse.gameStage == GAME_FINISHED){
 			std::cout << "game finished" << std::endl;
 			break;

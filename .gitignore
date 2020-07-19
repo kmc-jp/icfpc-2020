@@ -5,3 +5,5 @@ Dockerfile
 *.o
 *.d
 interpret
+*.exe
+*.out
