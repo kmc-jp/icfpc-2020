@@ -19,7 +19,7 @@ std::string makeJoinRequest(std::string playerKey){
 // [3, playerKey, [x0, x1, x2, x3]]
 // We noticed, that START doesn’t finish successfully when x3 is 0 or xi’s are too large.
 std::string makeStartRequest(std::string playerKey, GameResponse gameResponse){
-	return "[3," + playerKey + ",[1,1,1,1,Nil],Nil]";
+	return "[3," + playerKey + ",[10,10,10,10,Nil],Nil]";
 }
 
 // [4, playerKey, [commands]]
