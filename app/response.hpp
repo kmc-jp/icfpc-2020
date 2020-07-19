@@ -1,3 +1,4 @@
+#include "../interact/demodulator.hpp"
 #include <vector>
 
 struct GameResponse{
@@ -7,3 +8,6 @@ struct GameResponse{
 	// role 0-> attacker, 1->defender
 	//std::vector<int> gameState; // (gameTick, x1, shipsAndCommands) 
 };
+
+// token 列 -> GameResponse
+GameResponse getGameResponse(AlienData data);
