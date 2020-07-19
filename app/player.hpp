@@ -5,6 +5,6 @@
 #include "point2d.hpp"
 #include "response.hpp"
 
-std::vector<Command> Player(GameResponse gameResponse);
+std::vector<CommandPtr> Player(GameResponse gameResponse);
 
 #endif
