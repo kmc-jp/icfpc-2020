@@ -112,6 +112,7 @@ int main() {
         const auto pos = demodulate(res);
         click(pos);
       } else {
+        std::cout << "wating user input" << std::endl;
         string res;
         getline(is, res);
         if (is.fail()) {
