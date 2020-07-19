@@ -19,12 +19,12 @@ std::string makeJoinRequest(std::string playerKey){
 // [3, playerKey, [x0, x1, x2, x3]]
 // We noticed, that START doesn’t finish successfully when x3 is 0 or xi’s are too large.
 std::string makeStartRequest(std::string playerKey, GameResponse gameResponse){
-	return "[3," + playerKey + ",[10,10,10,10,Nil],Nil]";
+	return "[3," + playerKey + ",[20,15,10,5,Nil],Nil]";
 }
 
 // コマンドs を受け取って良い感じにする(TODO:やむなくと繋げる)
 std::string makeCommandsRequest(std::string playerKey, std::vector<CommandPtr> commands){
-	std::string req = "[4" + playerKey + ",";
+	std::string req = "[4," + playerKey + ",";
 	if((int)commands.size() == 0){
 		req += "Nil";
 	}
@@ -117,7 +117,7 @@ int main(int argc, char* argv[])
 
 	while(true){
         // make valid COMMANDS request using the provided playerKey and gameResponse returned from START or previous COMMANDS
-        auto commandsRequest = makeCommandsRequest(playerKey, gameResponse);
+        auto commandsRequest = makeCommandsRequest(playerKey, Player(gameResponse));
 		std::cout << "commandRequest: " << commandsRequest << std::endl;
 		// [4, playerKey, nil] -> ..
 		commandsRequest = modulate(commandsRequest);
