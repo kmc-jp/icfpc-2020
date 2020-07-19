@@ -14,8 +14,9 @@ string string_of_ll(long long x) {
     long long tmp = 1, lg = 0;
     while (tmp <= x) {
         s.push_back('1');
-        tmp <<= 4;
         lg += 4;
+        if(tmp <= x / 16) break;
+        tmp <<= 4;
     }
     s.push_back('0');
     string digit = "";
