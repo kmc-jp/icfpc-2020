@@ -31,7 +31,7 @@ string string_of_int(int x) {
 string parse_list(const string &s, int &idx) {
   string ans;
   string tmp;
-  for (; idx < s.size(); idx++) {
+  for (; idx < (int)s.size(); idx++) {
     if (s[idx] == '[') {
       idx++;
       string ret = parse_list(s, idx);
@@ -48,7 +48,7 @@ string parse_list(const string &s, int &idx) {
       bool minus = (s[idx] == '-');
       if (minus) idx++;
       int num = 0;
-      for (; idx < s.size(); idx++) {
+      for (; idx < (int)s.size(); idx++) {
         if (isdigit(s[idx])) {
           num = num * 10 + (s[idx] - '0');
         } else {
