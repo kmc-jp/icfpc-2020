@@ -1,3 +1,6 @@
+#ifndef DEMODULATOR_HPP
+#define DEMODULATOR_HPP
+
 #include "../interpreter/token.hpp"
 #include <vector>
 
@@ -16,3 +19,5 @@ struct AlienData{
 };
 
 struct AlienData demodulateList(const std::string &s);
+
+#endif

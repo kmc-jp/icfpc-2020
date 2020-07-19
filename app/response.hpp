@@ -1,3 +1,6 @@
+#ifndef RESPONSE_HPP
+#define RESPONSE_HPP
+
 #include "../interact/demodulator.hpp"
 #include <vector>
 
@@ -11,3 +14,5 @@ struct GameResponse{
 
 // token 列 -> GameResponse
 GameResponse getGameResponse(AlienData data);
+
+#endif
