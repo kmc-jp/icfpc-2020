@@ -71,7 +71,9 @@ string modulate(const string s) {
   if (isdigit(s[0]) || s[0] == '-') {
     return string_of_int(stoi(s));
   } else {
+    string t;
+    for(auto &c : s) if(c!= ' ') t.push_back(c);
     int idx = 1;
-    return parse_list(s, idx);
+    return parse_list(t, idx);
   }
 }
