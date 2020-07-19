@@ -22,7 +22,7 @@ std::string makeStartRequest(std::string playerKey, GameResponse gameResponse){
 }
 
 // コマンドs を受け取って良い感じにする(TODO:やむなくと繋げる)
-std::string makeCommandsRequest(std::string playerKey, std::vector<Command> commands){
+std::string makeCommandsRequest(std::string playerKey, std::vector<CommandPtr> commands){
 	std::string req = "[4" + playerKey + ",";
 	if((int)commands.size() == 0){
 		req += "Nil";
@@ -30,7 +30,7 @@ std::string makeCommandsRequest(std::string playerKey, std::vector<Command> comm
 	else{
 		std::string coms = "[";
 		for(auto command:commands){
-			coms += command.to_list_string();
+			coms += command->to_list_string();
 			coms += ",";
 		}
 		coms += "Nil]";
