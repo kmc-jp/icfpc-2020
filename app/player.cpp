@@ -11,7 +11,7 @@ std::vector<CommandPtr> Player(GameResponse gameResponse) {
   for(auto &sc : gameResponse.gameState.shipsAndCommands){
     Ship &ship = sc.ship;
     if (ship.role == myRole) {
-      com.push_back(make_accelerate(ship.shipId, {ship.velocity.x, ship.velocity.y}));
+      com.push_back(make_accelerate(ship.shipId, {ship.position.x, ship.position.y}));
     }
   }
 
