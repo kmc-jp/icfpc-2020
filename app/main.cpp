@@ -17,16 +17,13 @@ std::string makeJoinRequest(std::string playerKey){
 // [3, playerKey, [x0, x1, x2, x3]]
 // We noticed, that START doesn’t finish successfully when x3 is 0 or xi’s are too large.
 std::string makeStartRequest(std::string playerKey, GameResponse gameResponse){
-	return "[3," + playerKey + ",[1,1,1,1],Nil]";
+	return "[3," + playerKey + ",[1,1,1,1,Nil],Nil]";
 }
 
 // [4, playerKey, [commands]]
 std::string makeCommandsRequest(std::string playerKey, GameResponse gameResponse){
 	return "[4," + playerKey + ",Nil,Nil]";
 }
-
-// token 列 -> GameResponse
-extern GameResponse getGameResponse(std::vector<Token> tokens);
 
 template <typename T>
 void printv(const std::vector<T> &v) {
@@ -80,7 +77,7 @@ int main(int argc, char* argv[])
 		return 2;
 	}
 	std::cout << "joinRequest Response: " << serverResponse->body << std::endl;
-	auto gameResponse = getGameResponse(demodulate(serverResponse->body));
+	auto gameResponse = getGameResponse(demodulateList(serverResponse->body));
 	dump_game(gameResponse);
 
     // make valid START request using the provided playerKey and gameResponse returned from JOIN
@@ -100,7 +97,7 @@ int main(int argc, char* argv[])
 		return 2;
 	}
 	std::cout << "startRequest Response: " << serverResponse->body << std::endl;
-	gameResponse = getGameResponse(demodulate(serverResponse->body));
+	gameResponse = getGameResponse(demodulateList(serverResponse->body));
 	dump_game(gameResponse);
 
 	while(true){
@@ -122,7 +119,7 @@ int main(int argc, char* argv[])
 			return 2;
 		}
 		std::cout << "commandsRequestResponse: " << serverResponse->body << std::endl;
-		gameResponse = getGameResponse(demodulate(serverResponse->body));
+		gameResponse = getGameResponse(demodulateList(serverResponse->body));
 		dump_game(gameResponse);
 		if(gameResponse.gameStage == GAME_FINISHED){
 			std::cout << "game finished" << std::endl;
