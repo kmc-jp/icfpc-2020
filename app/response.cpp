@@ -55,9 +55,11 @@ GameResponse getGameResponse(AlienData data) {
   res.gameStage = data.vec[1].num;
   assert(data.vec[2].type == AlienDataType::List);
   assert(data.vec[2].vec.size() == 5);
+	if (res.gameStage == 2) return res;
   for (int i = 0; i < 5; i++) {
     res.staticGameInfo.push_back(data.vec[2].vec[i].num);
   }
+	if (res.gameStage == 0) return res;
   res.gameState = getGameState(data.vec[3]);
   return res;
 }
